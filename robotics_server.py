@@ -17,6 +17,7 @@ kill = 11
 
 pairedInstance = None
 shutdown = False
+rosSocket = None
 
 def goto(location):
     # TODO: Implement this.
@@ -26,6 +27,9 @@ def goto(location):
     return False
 
 def speak():
+    global rosSocket
+    rosSocket.sendall(1)
+
     # TODO: Implement this.
     # Should cause the robot to say something like "Assisance available here."
     # Should return immediately.
@@ -126,6 +130,10 @@ except:
 
 # Listen for incoming connections
 sock.listen(1)
+
+rosConnection, ros_address = sock.accept()
+rosSocket = rosConnection
+print 'accepted ros connection: ', ros_address
 
 while not shutdown:
     # Accept connections
