@@ -159,23 +159,31 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                 default:
                     // Includes Commands.kill
                     print(buffer[0])
-                    self.mainView.noServerView.isHidden = false
+                    self.hideNoServerView(false)
                 }
             }
         case Stream.Event.endEncountered:
             print("new message received")
         case Stream.Event.errorOccurred:
             print("error occurred")
-            mainView.noServerView.isHidden = false
+            self.hideNoServerView(false)
         case Stream.Event.openCompleted:
             print("open completed")
-            mainView.noServerView.isHidden = true
+            self.hideNoServerView(true)
         case Stream.Event.hasSpaceAvailable:
             print("has space available")
         default:
             print("some other event...")
             break
         }
+    }
+    
+    func hideNoServerView(_ hide: Bool) {
+        mainView.noServerView.isHidden = hide
+        mainView.pairButton.isHidden = !hide
+        mainView.speakButton.isHidden = !hide
+        mainView.roomTableView.isHidden = !hide
+        mainView.settingsButton.isHidden = !hide
     }
     
     // MARK: UITableViewDelegate
@@ -199,6 +207,7 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     func tableView(_ tableView: UITableView,
                    cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let result = UITableViewCell()
+        //result.selectionStyle = .none
         result.textLabel?.text = Settings.instance.roomArray[indexPath.row]
         result.accessoryType = .disclosureIndicator
         return result

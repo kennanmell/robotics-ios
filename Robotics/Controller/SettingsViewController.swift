@@ -27,7 +27,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 2
+        return 3
     }
     
     override func tableView(_ tableView: UITableView,
@@ -35,6 +35,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         switch section {
         case 0:  return "Server Location"
         case 1:  return "Rooms"
+        case 2: return "Info"
         default: return nil
         }
     }
@@ -44,6 +45,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         switch section {
         case 0:  return 2
         case 1:  return Settings.instance.roomArray.count + 1
+        case 2: return 3
         default: return 0
         }
     }
@@ -82,12 +84,24 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             }
         } else if indexPath.section == 1 {
             let result = UITableViewCell()
+            result.selectionStyle = .none
             if indexPath.row == Settings.instance.roomArray.count {
                 result.textLabel?.text = "Add room..."
                 result.accessoryView = UIButton(type: .contactAdd)
                 result.accessoryView?.isUserInteractionEnabled = false
             } else {
                 result.textLabel?.text = Settings.instance.roomArray[indexPath.row]
+            }
+            return result
+        } else if indexPath.section == 2 {
+            let result = UITableViewCell()
+            result.selectionStyle = .none
+            if indexPath.row == 0 {
+                result.textLabel?.text = "University of Washington"
+            } else if indexPath.row == 1 {
+                result.textLabel?.text = "CSE481c Winter 2018 Team 3"
+            } else if indexPath.row == 2 {
+                result.textLabel?.text = "Version 0.5"
             }
             return result
         } else {
