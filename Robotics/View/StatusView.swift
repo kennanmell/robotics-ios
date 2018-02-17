@@ -40,7 +40,8 @@ class StatusView: UIView {
         self.pendingLabel.frame = CGRect(x: self.frame.width * 0.1,
                                          y: self.frame.width * 0.3,
                                          width: self.frame.width * 0.8,
-                                         height: self.frame.height * 0.75 - self.frame.width * 0.3)
+                                         height: self.frame.height * 0.75 -
+                                            self.frame.width * 0.3)
 
         self.cancelButton.frame = CGRect(x: self.frame.width * 0.1,
                                          y: self.frame.height * 0.8,

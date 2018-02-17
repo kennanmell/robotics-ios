@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		226F005C203800C20083E882 /* Commands.swift in Sources */ = {isa = PBXBuildFile; fileRef = 226F005B203800C20083E882 /* Commands.swift */; };
+		226F005E203813CB0083E882 /* NoServerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 226F005D203813CB0083E882 /* NoServerView.swift */; };
 		22EDB85D203502C00008A018 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB85C203502C00008A018 /* AppDelegate.swift */; };
 		22EDB85F203502C00008A018 /* MainViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB85E203502C00008A018 /* MainViewController.swift */; };
 		22EDB862203502C00008A018 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 22EDB860203502C00008A018 /* Main.storyboard */; };
@@ -17,11 +19,12 @@
 		22EDB87A20378D180008A018 /* StatusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB87920378D180008A018 /* StatusView.swift */; };
 		22EDB87C20378D350008A018 /* StatusViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB87B20378D350008A018 /* StatusViewController.swift */; };
 		22EDB87E2037B2450008A018 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB87D2037B2450008A018 /* Settings.swift */; };
-		22EDB8802037BEBB0008A018 /* SocketManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB87F2037BEBB0008A018 /* SocketManager.swift */; };
 		22EDB8822037BEC20008A018 /* RequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB8812037BEC20008A018 /* RequestHandler.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		226F005B203800C20083E882 /* Commands.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Commands.swift; sourceTree = "<group>"; };
+		226F005D203813CB0083E882 /* NoServerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoServerView.swift; sourceTree = "<group>"; };
 		22EDB859203502C00008A018 /* Robotics.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Robotics.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		22EDB85C203502C00008A018 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		22EDB85E203502C00008A018 /* MainViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewController.swift; sourceTree = "<group>"; };
@@ -34,7 +37,6 @@
 		22EDB87920378D180008A018 /* StatusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusView.swift; sourceTree = "<group>"; };
 		22EDB87B20378D350008A018 /* StatusViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusViewController.swift; sourceTree = "<group>"; };
 		22EDB87D2037B2450008A018 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
-		22EDB87F2037BEBB0008A018 /* SocketManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SocketManager.swift; sourceTree = "<group>"; };
 		22EDB8812037BEC20008A018 /* RequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestHandler.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -83,9 +85,9 @@
 		22EDB8702035267C0008A018 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				22EDB87D2037B2450008A018 /* Settings.swift */,
-				22EDB87F2037BEBB0008A018 /* SocketManager.swift */,
+				226F005B203800C20083E882 /* Commands.swift */,
 				22EDB8812037BEC20008A018 /* RequestHandler.swift */,
+				22EDB87D2037B2450008A018 /* Settings.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -94,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				22EDB8752037832C0008A018 /* MainView.swift */,
+				226F005D203813CB0083E882 /* NoServerView.swift */,
 				22EDB87920378D180008A018 /* StatusView.swift */,
 			);
 			path = View;
@@ -181,9 +184,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				226F005E203813CB0083E882 /* NoServerView.swift in Sources */,
 				22EDB85F203502C00008A018 /* MainViewController.swift in Sources */,
 				22EDB85D203502C00008A018 /* AppDelegate.swift in Sources */,
-				22EDB8802037BEBB0008A018 /* SocketManager.swift in Sources */,
+				226F005C203800C20083E882 /* Commands.swift in Sources */,
 				22EDB87E2037B2450008A018 /* Settings.swift in Sources */,
 				22EDB87C20378D350008A018 /* StatusViewController.swift in Sources */,
 				22EDB8822037BEC20008A018 /* RequestHandler.swift in Sources */,

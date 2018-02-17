@@ -13,6 +13,7 @@ class MainView: UIView {
     let speakButton = UIButton()
     let roomTableView = UITableView()
     let settingsButton = UIButton()
+    let noServerView = NoServerView()
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
@@ -63,6 +64,9 @@ class MainView: UIView {
         roomTableView.layer.borderWidth = 3.0
         roomTableView.layer.borderColor = UIColor.darkGray.cgColor
         self.addSubview(roomTableView)
+        
+        self.noServerView.isHidden = true
+        self.addSubview(noServerView)
     }
     
     override func layoutSubviews() {
@@ -85,5 +89,7 @@ class MainView: UIView {
                                      y: self.frame.width * 0.9,
                                      width: self.frame.width * 0.8,
                                      height: self.frame.height * 0.95 - self.frame.width * 0.9)
+        
+        noServerView.frame = self.frame
     }
 }

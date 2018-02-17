@@ -21,8 +21,8 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     
     override func viewWillDisappear(_ animated: Bool) {
         if updatedServerLocation {
-            // TODO
             self.updatedServerLocation = false
+            RequestHandler.instance.connectToServer()
         }
     }
     
@@ -71,12 +71,12 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         if indexPath.section == 0 {
             switch indexPath.row {
             case 0:  let result = UITableViewCell()
-                     result.isUserInteractionEnabled = true
                      result.textLabel?.text = "IP: " + Settings.instance.serverIp
+                     result.accessoryType = .disclosureIndicator
                      return result
             case 1:  let result = UITableViewCell()
-                     result.isUserInteractionEnabled = true
                      result.textLabel?.text = "Port: " + String(Settings.instance.serverPort)
+                     result.accessoryType = .disclosureIndicator
                      return result
             default: return UITableViewCell()
             }

@@ -10,9 +10,14 @@ import UIKit
 
 class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate, UITableViewDataSource {
     
-    var inputStream: InputStream!
-    var outputStream: OutputStream!
     let maxReadLength = 4096
+    
+    required init?(coder aDecoder: NSCoder) {
+        super.init(coder: aDecoder)
+        RequestHandler.instance.streamDelegate = self
+        AppDelegate.mvc = self
+        RequestHandler.instance.connectToServer()
+    }
 
     var mainView: MainView {
         return self.view as! MainView
@@ -33,91 +38,37 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
             UITapGestureRecognizer(target: self,
                                    action: #selector(MainViewController.pairPressed)))
         
+        mainView.noServerView.settingsButton.addGestureRecognizer(
+            UITapGestureRecognizer(target: self,
+                                   action: #selector(MainViewController.settingsPressed)))
+        
+        mainView.noServerView.retryButton.addGestureRecognizer(
+            UITapGestureRecognizer(target: self,
+                                   action: #selector(MainViewController.retryPressed)))
+
         mainView.roomTableView.delegate = self
         mainView.roomTableView.dataSource = self
-        
-        self.setupNetworkCommunication()
-    }
-    
-    
-    func setupNetworkCommunication() {
-        var readStream: Unmanaged<CFReadStream>?
-        var writeStream: Unmanaged<CFWriteStream>?
-        
-        CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault,
-                                           Settings.instance.serverIp as CFString,
-                                           UInt32(Settings.instance.serverPort),
-                                           &readStream,
-                                           &writeStream)
-        inputStream = readStream!.takeRetainedValue()
-        inputStream.setProperty(StreamSocketSecurityLevel.none, forKey: Stream.PropertyKey.socketSecurityLevelKey)
-        outputStream = writeStream!.takeRetainedValue()
-        outputStream.setProperty(StreamSocketSecurityLevel.none, forKey: Stream.PropertyKey.socketSecurityLevelKey)
-        inputStream.delegate = self
-        inputStream.schedule(in: .current, forMode: .commonModes)
-        outputStream.schedule(in: .current, forMode: .commonModes)
-        inputStream.open()
-        outputStream.open()
-        //if inputStream.streamStatus == .open {
-        
-        let message = "test".data(using: .ascii)!
-        _ = message.withUnsafeBytes { outputStream.write($0, maxLength: message.count) }
-        //} else {
-        //    print("bad stream")
-        // TODO: make popup
-        //}
-    }
-    
-    // MARK: StreamDelegate
-    
-    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
-        switch eventCode {
-        case Stream.Event.hasBytesAvailable:
-            print("new message received")
-            readAvailableBytes(stream: aStream as! InputStream)
-        case Stream.Event.endEncountered:
-            print("new message received")
-        case Stream.Event.errorOccurred:
-            print("error occurred")
-        case Stream.Event.hasSpaceAvailable:
-            print("has space available")
-        default:
-            print("some other event...")
-            break
-        }
-    }
-    
-    private func readAvailableBytes(stream: InputStream) {
-        //1
-        print("1.")
-        let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: maxReadLength)
-        
-        //2
-        while stream.hasBytesAvailable {
-            //3
-            let numberOfBytesRead = inputStream.read(buffer, maxLength: maxReadLength)
-            
-            //4
-            if numberOfBytesRead < 0 {
-                print("2")
-                if let _ = stream.streamError {
-                    break
-                }
-            }
-            
-            print("3")
-            let message = String(bytesNoCopy: buffer,
-                                 length: numberOfBytesRead,
-                                 encoding: .ascii,
-                                 freeWhenDone: true)
-            
-            print(message!)
-        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         mainView.roomTableView.reloadData()
+    }
+    
+    func willEnterForeground() {
+        if RequestHandler.instance.paired {
+            mainView.pairButton.backgroundColor =
+                UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
+            mainView.pairButton.layer.shadowColor =
+                UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0).cgColor
+            mainView.pairButton.setTitle("Unpair", for: .normal)
+        } else {
+            mainView.pairButton.backgroundColor =
+                UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
+            mainView.pairButton.layer.shadowColor =
+                UIColor(red: 0, green: 0, blue: 100.0 / 255.0, alpha: 1.0).cgColor
+            mainView.pairButton.setTitle("Pair", for: .normal)
+        }
     }
     
     @objc func settingsPressed() {
@@ -130,8 +81,101 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     }
     
     @objc func pairPressed() {
-        // TODO: send request
-        performSegue(withIdentifier: "MainToStatus", sender: self)
+        if RequestHandler.instance.paired {
+            RequestHandler.instance.send(command: Commands.unpair)
+            mainView.pairButton.backgroundColor =
+                UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
+            mainView.pairButton.layer.shadowColor =
+                UIColor(red: 0, green: 0, blue: 100.0 / 255.0, alpha: 1.0).cgColor
+            mainView.pairButton.setTitle("Pair", for: .normal)
+            RequestHandler.instance.paired = false
+        } else {
+            RequestHandler.instance.send(command: Commands.pair)
+        }
+    }
+    
+    @objc func retryPressed() {
+        RequestHandler.instance.connectToServer()
+    }
+    
+    // MARK: StreamDelegate
+    
+    func stream(_ aStream: Stream, handle eventCode: Stream.Event) {
+        switch eventCode {
+        case Stream.Event.hasBytesAvailable:
+            print("new message received")
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: maxReadLength)
+            let stream = aStream as! InputStream
+            while stream.hasBytesAvailable {
+                let numberOfBytesRead = stream.read(buffer, maxLength: 1)
+                if numberOfBytesRead < 0 && stream.streamError != nil {
+                    break
+                }
+                
+                switch buffer[0] {
+                case Commands.pairSucceeded:
+                    print("pair succeeded")
+                    mainView.pairButton.backgroundColor =
+                        UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
+                    mainView.pairButton.layer.shadowColor =
+                        UIColor(red: 100.0 / 255.0, green: 0, blue: 0, alpha: 1.0).cgColor
+                    mainView.pairButton.setTitle("Unpair", for: .normal)
+                    RequestHandler.instance.paired = true
+                case Commands.pairFailed:
+                    print("pair failed")
+                    let alert = UIAlertController(title: "Pair failed",
+                                                  message: "Someone else is using the robot. Please try again soon!",
+                                                  preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "OK",
+                                                  style: .default,
+                                                  handler: nil))
+                    
+                    self.present(alert, animated: true, completion: nil)
+                case Commands.gotoDone:
+                    print("goto done")
+                case Commands.speakDone:
+                    print("speak done")
+                case Commands.update:
+                    print("got update")
+                case Commands.unpair:
+                    print("got unpair")
+                    mainView.pairButton.backgroundColor =
+                        UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
+                    mainView.pairButton.layer.shadowColor =
+                        UIColor(red: 0, green: 0, blue: 100.0 / 255.0, alpha: 1.0).cgColor
+                    mainView.pairButton.setTitle("Pair", for: .normal)
+                    RequestHandler.instance.paired = false
+                    
+                    let alert = UIAlertController(title: "Unpaired",
+                                                  message: "You were unpaired with the robot due to inactivity.",
+                                                  preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "OK",
+                                                  style: .default,
+                                                  handler: nil))
+                    
+                    self.present(alert, animated: true, completion: nil)
+                default:
+                    // Includes Commands.kill
+                    print(buffer[0])
+                    self.mainView.noServerView.isHidden = false
+                }
+            }
+        case Stream.Event.endEncountered:
+            print("new message received")
+        case Stream.Event.errorOccurred:
+            print("error occurred")
+            mainView.noServerView.isHidden = false
+        case Stream.Event.openCompleted:
+            print("open completed")
+            mainView.noServerView.isHidden = true
+        case Stream.Event.hasSpaceAvailable:
+            print("has space available")
+        default:
+            print("some other event...")
+            break
+        }
     }
     
     // MARK: UITableViewDelegate
