@@ -9,6 +9,8 @@
 import Foundation
 
 class SocketManager: NSObject, StreamDelegate {
+    static let instance = SocketManager()
+    
     var inputStream: InputStream!
     var outputStream: OutputStream!
     let maxReadLength = 4096
@@ -28,20 +30,22 @@ class SocketManager: NSObject, StreamDelegate {
                                            &readStream,
                                            &writeStream)
         inputStream = readStream!.takeRetainedValue()
+        inputStream.setProperty(StreamSocketSecurityLevel.none, forKey: Stream.PropertyKey.socketSecurityLevelKey)
         outputStream = writeStream!.takeRetainedValue()
+        outputStream.setProperty(StreamSocketSecurityLevel.none, forKey: Stream.PropertyKey.socketSecurityLevelKey)
+        inputStream.delegate = self
         inputStream.schedule(in: .current, forMode: .commonModes)
         outputStream.schedule(in: .current, forMode: .commonModes)
         inputStream.open()
         outputStream.open()
-        if inputStream.streamStatus == .open {
-            inputStream.delegate = self
-            
+        //if inputStream.streamStatus == .open {
+        
             let message = "test".data(using: .ascii)!
             _ = message.withUnsafeBytes { outputStream.write($0, maxLength: message.count) }
-        } else {
-            print("bad stream")
+        //} else {
+        //    print("bad stream")
             // TODO: make popup
-        }
+        //}
     }
     
     // MARK: StreamDelegate
@@ -65,6 +69,7 @@ class SocketManager: NSObject, StreamDelegate {
     
     private func readAvailableBytes(stream: InputStream) {
         //1
+        print("1.")
         let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: maxReadLength)
         
         //2
@@ -74,11 +79,13 @@ class SocketManager: NSObject, StreamDelegate {
             
             //4
             if numberOfBytesRead < 0 {
+                print("2")
                 if let _ = stream.streamError {
                     break
                 }
             }
             
+            print("3")
             let message = String(bytesNoCopy: buffer,
                                  length: numberOfBytesRead,
                                  encoding: .ascii,

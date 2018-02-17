@@ -31,6 +31,8 @@ class MainViewController: UIViewController, UITableViewDelegate, UITableViewData
         
         mainView.roomTableView.delegate = self
         mainView.roomTableView.dataSource = self
+        
+        SocketManager.instance.setupNetworkCommunication()
     }
     
     override func viewWillAppear(_ animated: Bool) {
