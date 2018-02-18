@@ -22,7 +22,7 @@ except:
 
 while True:
     data = sock.recv(1)
-    if ord(data[0]) == 1:
-        print 'got data 1'
+    if ord(data[0]) == 5:
+        print 'got data 5 -> speak'
     else:
         print 'got bad data'

@@ -28,7 +28,7 @@ def goto(location):
 
 def speak():
     global rosSocket
-    rosSocket.sendall(1)
+    rosSocket.sendall(chr(speak))
 
     # TODO: Implement this.
     # Should cause the robot to say something like "Assisance available here."

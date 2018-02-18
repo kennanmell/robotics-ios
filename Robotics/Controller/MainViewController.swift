@@ -76,8 +76,7 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     }
     
     @objc func speakPressed() {
-        // TODO: send request
-        performSegue(withIdentifier: "MainToStatus", sender: self)
+        RequestHandler.instance.send(command: Commands.speak)
     }
     
     @objc func pairPressed() {
