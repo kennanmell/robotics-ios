@@ -50,13 +50,25 @@ class RequestHandler {
         //self.send(command: Commands.pair)
     }
     
+    func sendGoto(room: String) {
+        var data = Data()
+        data.append(Commands.goto)
+        let length = room.lengthOfBytes(using: .ascii)
+        data.append(UInt8(length >> 24))
+        data.append(UInt8(length >> 16))
+        data.append(UInt8(length >> 8))
+        data.append(UInt8(length))
+        data.append(room.data(using: .ascii)!)
+        
+        self.sendData(data)
+    }
+    
     func send(command: UInt8) {
         var data = Data()
         data.append(command)
         
         switch command {
         case Commands.pair: break
-        case Commands.goto: break
         case Commands.speak: break
         case Commands.unpair: break
         case Commands.kill: break

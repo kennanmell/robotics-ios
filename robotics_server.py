@@ -3,47 +3,11 @@ import sys
 from urllib2 import urlopen
 from threading import Thread
 
-pair = 1
-pairSucceeded = 2
-pairFailed = 3
-unpair = 4
-speak = 5
-speakDone = 6
-goto = 7
-gotoDone = 8
-gotoFailed = 9
-update = 10
-kill = 11
-
-pairedInstance = None
 shutdown = False
 rosSocket = None
 
-def goto(location):
-    # TODO: Implement this.
-    # Should navigate the robot to the location specified by <location>.bag
-    # Return True if navigation succeeds, False otherwise
-    # Should not return until navigation completes
-    return False
-
-def speak():
-    global speak
-    global rosSocket
-    print 'in speak'
-    print str(speak)
-    print str(rosSocket)
-    rosSocket.sendall(chr(speak))
-
-    # TODO: Implement this.
-    # Should cause the robot to say something like "Assisance available here."
-    # Should return immediately.
-    pass
-
 def socketEventLoop(connection):
-    global pairedInstance
     global shutdown
-    global goto
-    global speak
     global rosSocket
 
     pair = 1
@@ -58,8 +22,10 @@ def socketEventLoop(connection):
     update = 10
     kill = 11
 
-    # Receive the data in small chunks and retransmit it
+    pairedInstance = None
     attempts = 0
+
+    # Receive commands and respond to them
     while True:
         try:
             if shutdown:
@@ -101,8 +67,23 @@ def socketEventLoop(connection):
                 print 'got goto from', str(connection)
                 if pairedInstance != connection:
                     break
+
+                data += connection.recv(4)
+                while len(data) < 5:
+                    data += connection.recv(5 - len(data))
+
+                titleLen = (ord(data[0]) << 24) | (ord(data[1]) << 16) | (ord(data[2]) << 8) | ord(data[3])
+
+                data += connection.recv(titleLen)
+                while len(data < titleLen + 5):
+                    data += connection.recv(titleLen + 5 - len(data))
+
+                rosSocket.sendall(data)
+                data = rosSocket.recv(1)
+                connection.sendall(data)
                 #locLength = (ord(data[1]) << 24) | (ord(data[2]) << 16) | (ord(data[3]) << 8) | ord(data[4]])
                 attempts = 0
+
                 if goto():
                     connection.sendall(chr(gotoDone))
                 else:
@@ -138,8 +119,8 @@ if len(sys.argv) != 2:
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-server_address = (urlopen('http://ip.42.pl/raw').read(), int(sys.argv[1]))
-#server_address = ('localhost', int(sys.argv[1]))
+#server_address = (urlopen('http://ip.42.pl/raw').read(), int(sys.argv[1]))
+server_address = ('localhost', int(sys.argv[1]))
 print >>sys.stderr, 'starting up on %s port %s' % server_address
 try:
     sock.bind(server_address)

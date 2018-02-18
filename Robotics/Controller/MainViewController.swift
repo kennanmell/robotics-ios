@@ -136,6 +136,34 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                     self.present(alert, animated: true, completion: nil)
                 case Commands.gotoDone:
                     print("goto done")
+                    if self.navigationController?.visibleViewController is StatusViewController {
+                        let alert = UIAlertController(title: "You have arrived.",
+                                                      message: nil,
+                                                      preferredStyle: .alert)
+                    
+                        alert.addAction(UIAlertAction(title: "OK",
+                                                      style: .default,
+                                                      handler: { _ in
+                            self.navigationController?.popViewController(animated: true)
+                        }))
+                    
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                case Commands.gotoFailed:
+                    print ("goto failed")
+                    if self.navigationController?.visibleViewController is StatusViewController {
+                        let alert = UIAlertController(title: "Navigation failed",
+                                                      message: "Couldn't find a path to the room.",
+                                                      preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "OK",
+                                                      style: .default,
+                                                      handler: { _ in
+                            self.navigationController?.popViewController(animated: true)
+                        }))
+                        
+                        self.present(alert, animated: true, completion: nil)
+                    }
                 case Commands.speakDone:
                     print("speak done")
                 case Commands.update:
@@ -189,6 +217,11 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     }
     
     // MARK: UITableViewDelegate
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "MainToStatus", sender: self)
+        RequestHandler.instance.sendGoto(room: Settings.instance.roomArray[indexPath.row])
+    }
     
     // MARK: UITableViewDataSource
     

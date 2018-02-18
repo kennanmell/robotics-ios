@@ -17,7 +17,7 @@ struct Commands {
     static let speakDone: UInt8 = 6
     static let goto: UInt8 = 7
     static let gotoDone: UInt8 = 8
-    static let gotoFailed = 9
+    static let gotoFailed: UInt8 = 9
     static let update: UInt8 = 10
     static let kill: UInt8 = 11
 }
