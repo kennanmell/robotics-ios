@@ -6,11 +6,13 @@ from threading import Thread
 pairedInstance = None
 shutdown = False
 rosSocket = None
+pairedSpeaker = None
 
 def socketEventLoop(connection):
     global pairedInstance
     global shutdown
     global rosSocket
+    global pairedSpeaker
 
     pair = 1
     pairSucceeded = 2
@@ -23,6 +25,14 @@ def socketEventLoop(connection):
     gotoFailed = 9
     update = 10
     kill = 11
+
+    robotPair = 12
+    robotPairSucceeded = 13
+    robotPairFailed = 14
+    speakerPair = 15
+    speakerPairSucceeded = 16
+    speakerPairFailed = 17
+    speakerUnpair = 18
 
     attempts = 0
 
@@ -69,14 +79,17 @@ def socketEventLoop(connection):
                 data += connection.recv(4)
                 while len(data) < 5:
                     data += connection.recv(5 - len(data))
-	
+
                 titleLen = (ord(data[1]) << 24) | (ord(data[2]) << 16) | (ord(data[3]) << 8) | ord(data[4])
                 data += connection.recv(titleLen)
                 while len(data) < titleLen + 5:
                     data += connection.recv(titleLen + 5 - len(data))
 
-		if pairedInstance != connection:
-		    continue
+		        if pairedInstance != connection:
+		            continue
+
+                if rosSocket is None:
+                    connection.sendall(chr(gotoFailed))
 
                 rosSocket.sendall(data)
                 data = rosSocket.recv(1)
@@ -85,13 +98,34 @@ def socketEventLoop(connection):
                 attempts = 0
             elif ord(data[0]) == kill:
                 print 'got kill from', str(connection)
-                if pairedInstance == connection:
-                    pairedInstance = None
-                    attempts = 0
                 break
+            elif ord(data[0] == robotPair):
+                if rosSocket == None or rosSocket == connection:
+                    print 'set ros socket to', str(connection)
+                    rosSocket = connection
+                    connection.sendall(chr(robotPairSucceeded))
+                    connection.settimeout(None)
+                    attempts = 0
+                else:
+                    print 'denied ros socket', str(connection)
+                    connection.sendall(chr(robotPairFailed))
+            elif ord(data[0] == speakerPair):
+                if pairedSpeaker == None or pairedSpeaker == connection:
+                    print 'set speaker to', str(connection)
+                    pairedSpeaker = connection
+                    connection.sendall(chr(speakerPairSucceeded))
+                    connection.settimeout(None)
+                    attempts = 0
+                else:
+                    print 'denied speaker', str(connection)
+                    connection.sendall(chr(speakerPairFailed))
+            elif ord(data[0] == speakerUnpair):
+                if pairedSpeaker == connection:
+                    pairedSpeaker = None
+                    attempts = 0
+                    connection.settimeout(5)
             else:
-                print 'unrecognized data from', str(connection)
-		print ord(data[0])
+                print 'force kill: unrecognized data from', str(connection)
                 break
         except:
             continue
@@ -100,7 +134,10 @@ def socketEventLoop(connection):
     print 'closing', str(connection)
     if pairedInstance == connection:
         pairedInstance = None
-        attempts = 0
+    if pairedSpeaker == connection:
+        pairedSpeaker = None
+    if rosSocket == connection:
+        rosSocket = None
     try:
         connection.sendall(chr(kill))
     except:

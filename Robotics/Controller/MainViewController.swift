@@ -8,6 +8,8 @@
 
 import UIKit
 
+var globalNavGoal: String? = nil
+
 class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate, UITableViewDataSource {
     
     let maxReadLength = 4096
@@ -53,6 +55,7 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         mainView.roomTableView.reloadData()
+        willEnterForeground()
     }
     
     func willEnterForeground() {
@@ -98,6 +101,7 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     
     @objc func retryPressed() {
         RequestHandler.instance.connectToServer()
+        willEnterForeground()
     }
     
     // MARK: StreamDelegate
@@ -125,16 +129,22 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                     RequestHandler.instance.paired = true
                 case Commands.pairFailed:
                     print("pair failed")
+                    globalNavGoal = nil
                     let alert = UIAlertController(title: "Pair failed",
                                                   message: "Someone else is using the robot. Please try again soon!",
                                                   preferredStyle: .alert)
                     
                     alert.addAction(UIAlertAction(title: "OK",
                                                   style: .default,
-                                                  handler: nil))
+                                                  handler: { _ in
+                        if self.navigationController?.visibleViewController is StatusViewController {
+                            self.navigationController?.popViewController(animated: true)
+                        }
+                    }))
                     
                     self.present(alert, animated: true, completion: nil)
                 case Commands.gotoDone:
+                    globalNavGoal = nil
                     print("goto done")
                     if self.navigationController?.visibleViewController is StatusViewController {
                         let alert = UIAlertController(title: "You have arrived.",
@@ -151,6 +161,7 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                     }
                 case Commands.gotoFailed:
                     print ("goto failed")
+                    globalNavGoal = nil
                     if self.navigationController?.visibleViewController is StatusViewController {
                         let alert = UIAlertController(title: "Navigation failed",
                                                       message: "Couldn't find a path to the room.",
@@ -190,6 +201,7 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                     // Includes Commands.kill
                     print(buffer[0])
                     self.hideNoServerView(false)
+                    RequestHandler.instance.paired = false
                 }
             }
         case Stream.Event.endEncountered:
@@ -220,6 +232,10 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "MainToStatus", sender: self)
+        if !RequestHandler.instance.paired {
+            RequestHandler.instance.send(command: Commands.pair)
+        }
+        globalNavGoal = Settings.instance.roomArray[indexPath.row]
         RequestHandler.instance.sendGoto(room: Settings.instance.roomArray[indexPath.row])
     }
     

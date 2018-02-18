@@ -29,7 +29,7 @@ class StatusView: UIView {
         self.cancelButton.setTitle("Cancel", for: .normal)
         self.addSubview(cancelButton)
         
-        self.pendingLabel.text = "Waiting for response to pair request."
+        self.pendingLabel.text = "Navigating to room " + globalNavGoal! + "."
         self.pendingLabel.textAlignment = .center
         self.pendingLabel.font = UIFont(name: self.pendingLabel.font.fontName, size: 20)
         self.pendingLabel.numberOfLines = 0

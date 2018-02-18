@@ -15,6 +15,9 @@ gotoDone = 8
 gotoFailed = 9
 update = 10
 kill = 11
+robotPair = 12
+robotPairSucceeded = 13
+robotPairFailed = 14
 
 if len(sys.argv) != 3:
     print "Usage: python", sys.argv[0], "<server-ip> <server-portno>"
@@ -29,26 +32,50 @@ server_address = (sys.argv[1], int(sys.argv[2]))
 try:
     sock.connect(server_address)
 except:
-    print 'unable to bind to server'
+    print 'unable to connect to server'
     exit()
 
-print 'connected to %s:%s' % server_address
+print 'connected to server %s:%s' % server_address
+
+sock.sendall(chr(robotPair))
+data = sock.recv(1)
+if ord(data[0]) != robotPairSucceeded:
+    print 'pair request denied by server'
+    sock.sendall(chr(kill))
+    exit()
+
+print 'paired with server'
 
 while True:
-    data = sock.recv(1)
-    if ord(data[0]) == 7:
-        data = sock.recv(4)
-        while len(data) < 4:
-            data += sock.recv(4 - len(data))
+    try:
+        data = sock.recv(1)
+        if ord(data[0]) == goto:
+            data = sock.recv(4)
+            while len(data) < 4:
+                data += sock.recv(4 - len(data))
+            titleLen = (ord(data[0]) << 24) | (ord(data[1]) << 16) | (ord(data[2]) << 8) | ord(data[3])
+            data = sock.recv(titleLen)
+            while len(data) < titleLen:
+                data += sock.recv(titleLen - len(data))
 
-        titleLen = (ord(data[0]) << 24) | (ord(data[1]) << 16) | (ord(data[2]) << 8) | ord(data[3])
+            print 'nav request to', data
 
-        data = sock.recv(titleLen)
-        while len(data < titleLen):
-            data += sock.recv(titleLen - len(data))
+            if data == 'xy':
+                sock.sendall(chr(gotoFailed))
+            else:
+                time.sleep(10)
+                sock.sendall(chr(gotoDone))
+        elif ord(data[0] == kill):
+            print 'got kill'
+            break
+        else:
+            print 'got bad data'
+            break
+    except:
+        break
 
-        time.sleep(2)
-
-        sock.sendall(chr(gotoDone))
-    else:
-        print 'got bad data'
+print 'shutting down...'
+try:
+    sock.sendall(chr(kill))
+except:
+    pass

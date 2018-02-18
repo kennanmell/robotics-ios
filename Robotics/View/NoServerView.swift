@@ -25,8 +25,6 @@ class NoServerView: UIView {
     }
     
     private func initialize() {
-        self.backgroundColor = UIColor.white
-        
         self.retryButton.backgroundColor =
             UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
         self.retryButton.showsTouchWhenHighlighted = true

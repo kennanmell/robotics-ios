@@ -17,6 +17,8 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.tableFooterView = UIView()
+        tableView.isEditing = true
+        tableView.allowsSelectionDuringEditing = true
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -27,7 +29,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 3
+        return 4
     }
     
     override func tableView(_ tableView: UITableView,
@@ -36,6 +38,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         case 0:  return "Server Location"
         case 1:  return "Rooms"
         case 2: return "Info"
+        case 3: return "Other"
         default: return nil
         }
     }
@@ -46,6 +49,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         case 0:  return 2
         case 1:  return Settings.instance.roomArray.count + 1
         case 2: return 3
+        case 3: return 1
         default: return 0
         }
     }
@@ -53,7 +57,6 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     override func tableView(_ tableView: UITableView,
                             canEditRowAt indexPath: IndexPath) -> Bool {
         switch indexPath.section {
-        case 0: return false
         case 1: return indexPath.row != Settings.instance.roomArray.count
         default: return false
         }
@@ -84,12 +87,12 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             }
         } else if indexPath.section == 1 {
             let result = UITableViewCell()
-            result.selectionStyle = .none
             if indexPath.row == Settings.instance.roomArray.count {
                 result.textLabel?.text = "Add room..."
                 result.accessoryView = UIButton(type: .contactAdd)
                 result.accessoryView?.isUserInteractionEnabled = false
             } else {
+                result.selectionStyle = .none
                 result.textLabel?.text = Settings.instance.roomArray[indexPath.row]
             }
             return result
@@ -104,8 +107,13 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 result.textLabel?.text = "Version 0.5"
             }
             return result
+        } else if indexPath.section == 3 {
+            let result = UITableViewCell()
+            result.textLabel?.text = "Speaker mode"
+            result.accessoryType = .disclosureIndicator
+            return result
         } else {
-            return UITableViewCell()
+            fatalError("Unexpected cell requested")
         }
     }
     
@@ -164,7 +172,9 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                     }
                 }))
                 
-                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { _ in
+                    tableView.deselectRow(at: indexPath, animated: false)
+                }))
                 
                 self.present(alert, animated: true, completion: nil)
             } else {
