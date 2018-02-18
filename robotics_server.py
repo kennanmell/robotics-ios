@@ -29,6 +29,9 @@ def goto(location):
 def speak():
     global speak
     global rosSocket
+    print 'in speak'
+    print str(speak)
+    print str(rosSocket)
     rosSocket.sendall(chr(speak))
 
     # TODO: Implement this.
@@ -39,6 +42,9 @@ def speak():
 def socketEventLoop(connection):
     global pairedInstance
     global shutdown
+    global goto
+    global speak
+    global rosSocket
 
     pair = 1
     pairSucceeded = 2
@@ -90,7 +96,7 @@ def socketEventLoop(connection):
                 if pairedInstance != connection:
                     break
                 attempts = 0
-                speak()
+                rosSocket.sendall(chr(speak))
             elif ord(data[0]) == goto:
                 print 'got goto from', str(connection)
                 if pairedInstance != connection:
