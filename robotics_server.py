@@ -27,6 +27,7 @@ def goto(location):
     return False
 
 def speak():
+    global speak
     global rosSocket
     rosSocket.sendall(chr(speak))
 

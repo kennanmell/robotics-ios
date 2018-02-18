@@ -76,6 +76,9 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
     }
     
     @objc func speakPressed() {
+        if !RequestHandler.instance.paired {
+            RequestHandler.instance.send(command: Commands.pair)
+        }
         RequestHandler.instance.send(command: Commands.speak)
     }
     
