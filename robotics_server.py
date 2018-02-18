@@ -40,6 +40,18 @@ def socketEventLoop(connection):
     global pairedInstance
     global shutdown
 
+    pair = 1
+    pairSucceeded = 2
+    pairFailed = 3
+    unpair = 4
+    speak = 5
+    speakDone = 6
+    goto = 7
+    gotoDone = 8
+    gotoFailed = 9
+    update = 10
+    kill = 11
+
     # Receive the data in small chunks and retransmit it
     attempts = 0
     while True:
