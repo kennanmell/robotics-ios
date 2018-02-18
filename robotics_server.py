@@ -3,10 +3,12 @@ import sys
 from urllib2 import urlopen
 from threading import Thread
 
+pairedInstance = None
 shutdown = False
 rosSocket = None
 
 def socketEventLoop(connection):
+    global pairedInstance
     global shutdown
     global rosSocket
 
@@ -22,7 +24,6 @@ def socketEventLoop(connection):
     update = 10
     kill = 11
 
-    pairedInstance = None
     attempts = 0
 
     # Receive commands and respond to them
@@ -44,7 +45,7 @@ def socketEventLoop(connection):
             if ord(data[0]) == pair:
                 if pairedInstance == None or pairedInstance == connection:
                     print 'paired with', str(connection)
-                    pairedInstance = connection #instanceId
+                    pairedInstance = connection
                     response = chr(pairSucceeded)
                     connection.sendall(response)
                     attempts = 0
@@ -60,34 +61,28 @@ def socketEventLoop(connection):
             elif ord(data[0]) == speak:
                 print 'got speak from', str(connection)
                 if pairedInstance != connection:
-                    break
+                    continue
                 attempts = 0
                 rosSocket.sendall(chr(speak))
             elif ord(data[0]) == goto:
                 print 'got goto from', str(connection)
-                if pairedInstance != connection:
-                    break
-
                 data += connection.recv(4)
                 while len(data) < 5:
                     data += connection.recv(5 - len(data))
-
-                titleLen = (ord(data[0]) << 24) | (ord(data[1]) << 16) | (ord(data[2]) << 8) | ord(data[3])
-
+	
+                titleLen = (ord(data[1]) << 24) | (ord(data[2]) << 16) | (ord(data[3]) << 8) | ord(data[4])
                 data += connection.recv(titleLen)
-                while len(data < titleLen + 5):
+                while len(data) < titleLen + 5:
                     data += connection.recv(titleLen + 5 - len(data))
+
+		if pairedInstance != connection:
+		    continue
 
                 rosSocket.sendall(data)
                 data = rosSocket.recv(1)
                 connection.sendall(data)
                 #locLength = (ord(data[1]) << 24) | (ord(data[2]) << 16) | (ord(data[3]) << 8) | ord(data[4]])
                 attempts = 0
-
-                if goto():
-                    connection.sendall(chr(gotoDone))
-                else:
-                    connection.sendall(chr(gotoFailed))
             elif ord(data[0]) == kill:
                 print 'got kill from', str(connection)
                 if pairedInstance == connection:
@@ -96,6 +91,7 @@ def socketEventLoop(connection):
                 break
             else:
                 print 'unrecognized data from', str(connection)
+		print ord(data[0])
                 break
         except:
             continue
@@ -119,8 +115,8 @@ if len(sys.argv) != 2:
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Bind the socket to the port
-#server_address = (urlopen('http://ip.42.pl/raw').read(), int(sys.argv[1]))
-server_address = ('localhost', int(sys.argv[1]))
+server_address = (urlopen('http://ip.42.pl/raw').read(), int(sys.argv[1]))
+#server_address = ('localhost', int(sys.argv[1]))
 print >>sys.stderr, 'starting up on %s port %s' % server_address
 try:
     sock.bind(server_address)
