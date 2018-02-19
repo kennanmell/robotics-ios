@@ -33,6 +33,7 @@ def socketEventLoop(connection):
     speakerPairSucceeded = 16
     speakerPairFailed = 17
     speakerUnpair = 18
+    ping = 19
 
     attempts = 0
 
@@ -85,31 +86,50 @@ def socketEventLoop(connection):
                 while len(data) < titleLen + 5:
                     data += connection.recv(titleLen + 5 - len(data))
 
-		        if pairedInstance != connection:
-		            continue
+		if pairedInstance != connection:
+                    print 'ignoring goto (unpaired)'
+		    continue
 
                 if rosSocket is None:
+                    print 'goto failed (ros node not connected)'
                     connection.sendall(chr(gotoFailed))
 
                 rosSocket.sendall(data)
                 data = rosSocket.recv(1)
-                connection.sendall(data)
+                if len(data) != 1:
+                    print 'goto failed (ros node unresponsive).'
+                    print 'disconnecting from ros node.'
+                    rosSocket = None
+                    connection.sendall(chr(gotoFailed))
+                else:
+                    print 'goto finished'
+                    connection.sendall(data)
                 #locLength = (ord(data[1]) << 24) | (ord(data[2]) << 16) | (ord(data[3]) << 8) | ord(data[4]])
                 attempts = 0
             elif ord(data[0]) == kill:
                 print 'got kill from', str(connection)
                 break
-            elif ord(data[0] == robotPair):
+            elif ord(data[0]) == robotPair:
                 if rosSocket == None or rosSocket == connection:
                     print 'set ros socket to', str(connection)
                     rosSocket = connection
                     connection.sendall(chr(robotPairSucceeded))
                     connection.settimeout(None)
-                    attempts = 0
+		    return
                 else:
-                    print 'denied ros socket', str(connection)
-                    connection.sendall(chr(robotPairFailed))
-            elif ord(data[0] == speakerPair):
+                    rosSocket.sendall(chr(ping))
+                    data = rosSocket.recv(1)
+                    print 'got response to ping'
+                    if len(data) != 1 or data[0] != ord(ping):
+                        print 'set ros socket to', str(connection)
+                        rosSocket = connection
+                        connection.sendall(chr(robotPairSucceeded))
+                        connection.settimeout(None)
+                        return
+                    else:
+                        print 'denied ros socket', str(connection)
+                        connection.sendall(chr(robotPairFailed))
+            elif ord(data[0]) == speakerPair:
                 if pairedSpeaker == None or pairedSpeaker == connection:
                     print 'set speaker to', str(connection)
                     pairedSpeaker = connection
@@ -119,13 +139,14 @@ def socketEventLoop(connection):
                 else:
                     print 'denied speaker', str(connection)
                     connection.sendall(chr(speakerPairFailed))
-            elif ord(data[0] == speakerUnpair):
+            elif ord(data[0]) == speakerUnpair:
                 if pairedSpeaker == connection:
                     pairedSpeaker = None
                     attempts = 0
                     connection.settimeout(5)
             else:
                 print 'force kill: unrecognized data from', str(connection)
+		print 'data:', ord(data[0])
                 break
         except:
             continue
@@ -164,19 +185,22 @@ except:
 # Listen for incoming connections
 sock.listen(1)
 
-rosConnection, ros_address = sock.accept()
-rosSocket = rosConnection
-print 'accepted ros connection: ', ros_address
-
 while not shutdown:
     # Accept connections
     try:
         connection, client_address = sock.accept()
         connection.settimeout(5)
+        print 'accepted connection: ', client_address
         thread = Thread(target = socketEventLoop, args = (connection, ))
         thread.start()
-        print 'accepted connection: ', client_address
     except:
         print 'shutting down...'
         shutdown = True
         sock.close()
+
+if not rosSocket is None:
+    print 'sending kill to ros socket', rosSocket
+    try:
+        rosSocket.sendall(chr(kill))
+    except:
+        pass
