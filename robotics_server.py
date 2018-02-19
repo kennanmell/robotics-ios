@@ -10,7 +10,24 @@ pairedSpeaker = None
 navPending = False
 
 def robotResponse(connection):
+    global pairedInstance
+    global rosSocket
+    global navPending
+
+    gotoDone = 8
+    gotoFailed = 9
+    cancelGotoSucceeded = 21
+    goHomeSucceeded = 23
+
     data = rosSocket.recv(1)
+    if pairedInstance == 12:
+        if ord(data[0]) == goHomeSucceeded:
+            print 'go home succeeded'
+        else:
+            print 'go home failed'
+        pairedInstance = None
+        return
+
     if ord(data[0]) != gotoDone and ord(data[0]) != gotoFailed and ord(data[0]) != cancelGotoSucceeded:
         print 'goto failed (ros node unresponsive)'
         print 'disconnecting from ros node'
@@ -18,7 +35,10 @@ def robotResponse(connection):
         connection.sendall(chr(gotoFailed))
     else:
         print 'goto finished'
-        connection.sendall(data)
+        try:
+            connection.sendall(data)
+        except:
+            pass
     navPending = False
 
 def socketEventLoop(connection):
@@ -33,7 +53,7 @@ def socketEventLoop(connection):
     pairFailed = 3
     unpair = 4
     speak = 5
-    speakDone = 6
+    speakFailed = 6
     goto = 7
     gotoDone = 8
     gotoFailed = 9
@@ -50,6 +70,9 @@ def socketEventLoop(connection):
     ping = 19
     cancelGoto = 20
     cancelGotoSucceeded = 21
+    goHome = 22
+    goHomeSucceeded = 23
+    speakerSpeak = 24
 
     attempts = 0
 
@@ -59,12 +82,16 @@ def socketEventLoop(connection):
             if shutdown:
                 break
 
-            if pairedInstance == connection and !navPending:
+            if pairedInstance == connection and navPending == False:
                 attempts += 1
                 if attempts >= 14:
                     print 'force unpairing with', str(connection)
+                    print 'sending robot home'
                     connection.sendall(chr(unpair))
-                    pairedInstance = None
+                    pairedInstance = 12
+                    rosSocket.sendall(chr(goHome))
+                    thread = Thread(target = robotResponse, args = (connection,))
+                    thread.start()
                     attempts = 0
 
             data = connection.recv(1)
@@ -83,14 +110,24 @@ def socketEventLoop(connection):
             elif ord(data[0]) == unpair:
                 print 'unpaired with', str(connection)
                 if pairedInstance == connection:
-                    pairedInstance = None
+                    if rosSocket is None:
+                        pairedInstance = None
+                    else:
+                        print 'sending robot home'
+                        pairedInstance = 12
+                        rosSocket.sendall(chr(goHome))
+                        thread = Thread(target = robotResponse, args = (connection,))
+                        thread.start()
                     attempts = 0
             elif ord(data[0]) == speak:
                 print 'got speak from', str(connection)
                 if pairedInstance != connection:
                     continue
                 attempts = 0
-                rosSocket.sendall(chr(speak))
+                if pairedSpeaker is None:
+                    connection.sendall(chr(speakFailed))
+                else:
+                    pairedSpeaker.sendall(chr(speakerSpeak))
             elif ord(data[0]) == goto:
                 print 'got goto from', str(connection)
                 data += connection.recv(4)
@@ -149,11 +186,13 @@ def socketEventLoop(connection):
                     print 'denied speaker', str(connection)
                     connection.sendall(chr(speakerPairFailed))
             elif ord(data[0]) == speakerUnpair:
+                print 'unpaired speaker at', str(connection)
                 if pairedSpeaker == connection:
                     pairedSpeaker = None
                     attempts = 0
                     connection.settimeout(5)
             elif ord(data[0]) == cancelGoto:
+                print 'got cancel request'
                 if pairedInstance != connection:
                     print 'ignoring cancel (unpaired)'
                     continue
