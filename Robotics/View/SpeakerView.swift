@@ -15,6 +15,13 @@ class SpeakerView: UIView {
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         
+        self.speechLabel.text = Settings.instance.speechText
+        self.speechLabel.textAlignment = .center
+        self.speechLabel.font = UIFont(name: self.speechLabel.font.fontName, size: 20)
+        self.speechLabel.numberOfLines = 0
+        self.speechLabel.isUserInteractionEnabled = true
+        self.addSubview(speechLabel)
+        
         self.cancelButton.backgroundColor =
             UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
         self.cancelButton.showsTouchWhenHighlighted = true
@@ -28,13 +35,6 @@ class SpeakerView: UIView {
         self.cancelButton.layer.shadowOffset = CGSize(width: 0, height: 3)
         self.cancelButton.setTitle("Cancel", for: .normal)
         self.addSubview(cancelButton)
-        
-        self.speechLabel.text = Settings.instance.speechText
-        self.speechLabel.textAlignment = .center
-        self.speechLabel.font = UIFont(name: self.speechLabel.font.fontName, size: 20)
-        self.speechLabel.numberOfLines = 0
-        self.speechLabel.isUserInteractionEnabled = true
-        self.addSubview(speechLabel)
     }
     
     override func layoutSubviews() {

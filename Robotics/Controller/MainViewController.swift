@@ -16,6 +16,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
     
     let maxReadLength = 2
     var synthesizer: AVSpeechSynthesizer? = nil
+    var isSpeaking = false
     
     var mainView: MainView {
         return self.view as! MainView
@@ -68,6 +69,9 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
     func didEnterBackground() {
         if self.navigationController?.visibleViewController is StatusViewController {
             RequestHandler.instance.send(command: Commands.cancelGoto)
+            self.navigationController?.popViewController(animated: true)
+        } else if self.navigationController?.visibleViewController is SpeakerViewController {
+            RequestHandler.instance.send(command: Commands.speakerUnpair)
             self.navigationController?.popViewController(animated: true)
         }
     }
@@ -193,7 +197,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                     }
                 case Commands.speakerSpeak:
                     print("got speaker speak")
-                    if self.navigationController?.visibleViewController is SpeakerViewController {
+                    if self.navigationController?.visibleViewController is SpeakerViewController && !self.isSpeaking {
                         let utterance = AVSpeechUtterance(string: Settings.instance.speechText)
                         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
                         self.synthesizer = AVSpeechSynthesizer()
@@ -286,7 +290,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                            didStart utterance: AVSpeechUtterance) {
-        print("in delegate start")
+        self.isSpeaking = true
         if navigationController?.visibleViewController is SpeakerViewController {
             (navigationController?.visibleViewController as! SpeakerViewController)
                 .speakerView.backgroundColor = UIColor.blue
@@ -295,7 +299,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
     
     func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
                            didFinish utterance: AVSpeechUtterance) {
-        print("in delegate end")
+        self.isSpeaking = false
         if navigationController?.visibleViewController is SpeakerViewController {
             (navigationController?.visibleViewController as! SpeakerViewController)
                 .speakerView.backgroundColor = UIColor.white
