@@ -96,9 +96,9 @@ def socketEventLoop(connection):
 
                 rosSocket.sendall(data)
                 data = rosSocket.recv(1)
-                if len(data) != 1:
-                    print 'goto failed (ros node unresponsive).'
-                    print 'disconnecting from ros node.'
+                if ord(data[0]) != gotoDone and ord(data[0]) != gotoFailed:
+                    print 'goto failed (ros node unresponsive)'
+                    print 'disconnecting from ros node'
                     rosSocket = None
                     connection.sendall(chr(gotoFailed))
                 else:
@@ -115,12 +115,12 @@ def socketEventLoop(connection):
                     rosSocket = connection
                     connection.sendall(chr(robotPairSucceeded))
                     connection.settimeout(None)
-	                return
+	            return
                 else:
                     rosSocket.sendall(chr(ping))
                     data = rosSocket.recv(1)
                     print 'got response to ping'
-                    if len(data) != 1 or data[0] != ord(ping):
+                    if  ord(data[0]) != ping:
                         print 'set ros socket to', str(connection)
                         rosSocket = connection
                         connection.sendall(chr(robotPairSucceeded))
@@ -175,12 +175,13 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Bind the socket to the port
 server_address = (urlopen('http://ip.42.pl/raw').read(), int(sys.argv[1]))
 #server_address = ('localhost', int(sys.argv[1]))
-print >>sys.stderr, 'starting up on %s port %s' % server_address
 try:
     sock.bind(server_address)
 except:
     print 'unable to bind to port'
     exit()
+
+print 'running server on %s:%s' % server_address
 
 # Listen for incoming connections
 sock.listen(1)
@@ -190,7 +191,7 @@ while not shutdown:
     try:
         connection, client_address = sock.accept()
         connection.settimeout(5)
-        print 'accepted connection: ', client_address
+        print 'accepted connection', client_address
         thread = Thread(target = socketEventLoop, args = (connection, ))
         thread.start()
     except:
