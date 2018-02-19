@@ -180,7 +180,6 @@ def socketEventLoop(connection):
                     print 'set speaker to', str(connection)
                     pairedSpeaker = connection
                     connection.sendall(chr(speakerPairSucceeded))
-                    connection.settimeout(None)
                     attempts = 0
                 else:
                     print 'denied speaker', str(connection)
@@ -190,7 +189,6 @@ def socketEventLoop(connection):
                 if pairedSpeaker == connection:
                     pairedSpeaker = None
                     attempts = 0
-                    connection.settimeout(5)
             elif ord(data[0]) == cancelGoto:
                 print 'got cancel request'
                 if pairedInstance != connection:
