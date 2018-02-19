@@ -75,10 +75,29 @@
                         <viewLayoutGuide key="safeArea" id="Ud4-6o-Cxn"/>
                     </view>
                     <navigationItem key="navigationItem" title="Settings" id="fgA-dV-DLG"/>
+                    <connections>
+                        <segue destination="vd2-t1-xuE" kind="show" identifier="SettingsToSpeaker" id="yrW-ND-tak"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="29L-Lb-J9K" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="226" y="120"/>
+        </scene>
+        <!--Speaker-->
+        <scene sceneID="i8g-uE-ikQ">
+            <objects>
+                <viewController id="vd2-t1-xuE" customClass="SpeakerViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="L2b-JE-TeX" customClass="SpeakerView" customModule="Robotics" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="cF7-Aj-aTr"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Speaker" id="xrT-00-6sh"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="HEX-UK-qVR" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="993" y="119"/>
         </scene>
     </scenes>
 </document>

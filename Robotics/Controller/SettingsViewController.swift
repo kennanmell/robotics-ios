@@ -104,7 +104,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             } else if indexPath.row == 1 {
                 result.textLabel?.text = "CSE481c Winter 2018 Team 3"
             } else if indexPath.row == 2 {
-                result.textLabel?.text = "Version 0.5"
+                result.textLabel?.text = "Version 1.0"
             }
             return result
         } else if indexPath.section == 3 {
@@ -179,6 +179,20 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 self.present(alert, animated: true, completion: nil)
             } else {
                 self.tableView.deselectRow(at: indexPath, animated: false)
+            }
+        } else if indexPath.section == 3 {
+            if (AppDelegate.mvc?.connectedToServer)! {
+                performSegue(withIdentifier: "SettingsToSpeaker", sender: self)
+                if RequestHandler.instance.paired {
+                    RequestHandler.instance.send(command: Commands.unpair)
+                    RequestHandler.instance.paired = false
+                }
+                RequestHandler.instance.send(command: Commands.speakerPair)
+            } else {
+                self.tableView.deselectRow(at: indexPath, animated: false)
+                let alert = UIAlertController(title: "Command failed", message: "Can't connect to server.", preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
+                self.present(alert, animated: true, completion: nil)
             }
         }
     }

@@ -21,6 +21,7 @@
 		22EDB87E2037B2450008A018 /* Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB87D2037B2450008A018 /* Settings.swift */; };
 		22EDB8822037BEC20008A018 /* RequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB8812037BEC20008A018 /* RequestHandler.swift */; };
 		22FEC6E6203A26AC00D2FF11 /* SpeakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEC6E5203A26AC00D2FF11 /* SpeakerView.swift */; };
+		22FEC6E8203AA6B800D2FF11 /* SpeakerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEC6E7203AA6B800D2FF11 /* SpeakerViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +41,7 @@
 		22EDB87D2037B2450008A018 /* Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Settings.swift; sourceTree = "<group>"; };
 		22EDB8812037BEC20008A018 /* RequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestHandler.swift; sourceTree = "<group>"; };
 		22FEC6E5203A26AC00D2FF11 /* SpeakerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerView.swift; sourceTree = "<group>"; };
+		22FEC6E7203AA6B800D2FF11 /* SpeakerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 			children = (
 				22EDB85E203502C00008A018 /* MainViewController.swift */,
 				22EDB86E203515AE0008A018 /* SettingsViewController.swift */,
+				22FEC6E7203AA6B800D2FF11 /* SpeakerViewController.swift */,
 				22EDB87B20378D350008A018 /* StatusViewController.swift */,
 			);
 			path = Controller;
@@ -187,6 +190,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				22FEC6E8203AA6B800D2FF11 /* SpeakerViewController.swift in Sources */,
 				226F005E203813CB0083E882 /* NoServerView.swift in Sources */,
 				22EDB85F203502C00008A018 /* MainViewController.swift in Sources */,
 				22EDB85D203502C00008A018 /* AppDelegate.swift in Sources */,

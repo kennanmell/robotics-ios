@@ -7,22 +7,29 @@
 //
 
 import UIKit
+import AVFoundation
 
 var globalNavGoal: String? = nil
 
-class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate, UITableViewDataSource {
+class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerDelegate,
+                          UITableViewDelegate, UITableViewDataSource {
     
-    let maxReadLength = 4096
+    let maxReadLength = 2
+    var synthesizer: AVSpeechSynthesizer? = nil
+    
+    var mainView: MainView {
+        return self.view as! MainView
+    }
+    
+    var connectedToServer: Bool {
+        return mainView.noServerView.isHidden
+    }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         RequestHandler.instance.streamDelegate = self
         AppDelegate.mvc = self
         RequestHandler.instance.connectToServer()
-    }
-
-    var mainView: MainView {
-        return self.view as! MainView
     }
     
     override func viewDidLoad() {
@@ -58,6 +65,13 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
         willEnterForeground()
     }
     
+    func didEnterBackground() {
+        if self.navigationController?.visibleViewController is StatusViewController {
+            RequestHandler.instance.send(command: Commands.cancelGoto)
+            self.navigationController?.popViewController(animated: true)
+        }
+    }
+    
     func willEnterForeground() {
         if RequestHandler.instance.paired {
             mainView.pairButton.backgroundColor =
@@ -73,6 +87,8 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
             mainView.pairButton.setTitle("Pair", for: .normal)
         }
     }
+    
+    // MARK: Callbacks
     
     @objc func settingsPressed() {
         performSegue(withIdentifier: "MainToSettings", sender: self)
@@ -175,8 +191,26 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                         
                         self.present(alert, animated: true, completion: nil)
                     }
-                case Commands.speakDone:
-                    print("speak done")
+                case Commands.speakerSpeak:
+                    print("got speaker speak")
+                    if self.navigationController?.visibleViewController is SpeakerViewController {
+                        let utterance = AVSpeechUtterance(string: Settings.instance.speechText)
+                        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+                        self.synthesizer = AVSpeechSynthesizer()
+                        self.synthesizer?.delegate = self
+                        self.synthesizer?.speak(utterance)
+                    }
+                case Commands.speakFailed:
+                    print("got speak failed")
+                    let alert = UIAlertController(title: "Speak failed",
+                                                message: "No speaker is connected.",
+                                         preferredStyle: .alert)
+                        
+                    alert.addAction(UIAlertAction(title: "OK",
+                                                  style: .default,
+                                                handler: nil))
+                        
+                    self.present(alert, animated: true, completion: nil)
                 case Commands.cancelGotoSucceeded:
                     print("got cancel succeeded")
                     if self.navigationController?.visibleViewController is StatusViewController {
@@ -192,14 +226,31 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                     RequestHandler.instance.paired = false
                     
                     let alert = UIAlertController(title: "Unpaired",
-                                                  message: "You were unpaired with the robot due to inactivity.",
-                                                  preferredStyle: .alert)
+                                                message: "You were unpaired with the robot due to inactivity.",
+                                         preferredStyle: .alert)
                     
                     alert.addAction(UIAlertAction(title: "OK",
                                                   style: .default,
                                                   handler: nil))
                     
                     self.present(alert, animated: true, completion: nil)
+                case Commands.speakerPairSucceeded:
+                    print("got speaker pair succeeded")
+                case Commands.speakerPairFailed:
+                    print("got speaker pair failed")
+                    if self.navigationController?.visibleViewController is SpeakerViewController {
+                        let alert = UIAlertController(title: "Pair failed",
+                                                    message: "Another speaker is already connected.",
+                                             preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "OK",
+                                                      style: .default,
+                                                    handler: { _ in
+                            self.navigationController?.popViewController(animated: true)
+                        }))
+                        
+                        self.present(alert, animated: true, completion: nil)
+                    }
                 default:
                     // Includes Commands.kill
                     print(buffer[0])
@@ -229,6 +280,26 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
         mainView.speakButton.isHidden = !hide
         mainView.roomTableView.isHidden = !hide
         mainView.settingsButton.isHidden = !hide
+    }
+    
+    // MARK: AVSpeechSynthesizerDelegate
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+                           didStart utterance: AVSpeechUtterance) {
+        print("in delegate start")
+        if navigationController?.visibleViewController is SpeakerViewController {
+            (navigationController?.visibleViewController as! SpeakerViewController)
+                .speakerView.backgroundColor = UIColor.blue
+        }
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer,
+                           didFinish utterance: AVSpeechUtterance) {
+        print("in delegate end")
+        if navigationController?.visibleViewController is SpeakerViewController {
+            (navigationController?.visibleViewController as! SpeakerViewController)
+                .speakerView.backgroundColor = UIColor.white
+        }
     }
     
     // MARK: UITableViewDelegate

@@ -26,6 +26,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
     func applicationDidEnterBackground(_ application: UIApplication) {
+        AppDelegate.mvc?.didEnterBackground()
         RequestHandler.instance.paired = false
         RequestHandler.instance.send(command: Commands.kill)
     }

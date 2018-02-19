@@ -14,7 +14,7 @@ struct Commands {
     static let pairFailed: UInt8 = 3
     static let unpair: UInt8 = 4
     static let speak: UInt8 = 5
-    static let speakDone: UInt8 = 6
+    static let speakFailed: UInt8 = 6
     static let goto: UInt8 = 7
     static let gotoDone: UInt8 = 8
     static let gotoFailed: UInt8 = 9
@@ -28,4 +28,6 @@ struct Commands {
     // 19 reserved for ping
     static let cancelGoto: UInt8 = 20
     static let cancelGotoSucceeded: UInt8 = 21
+    // 22 and 23 reserved for go home
+    static let speakerSpeak: UInt8 = 24
 }
