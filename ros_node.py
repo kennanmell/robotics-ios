@@ -18,6 +18,7 @@ kill = 11
 robotPair = 12
 robotPairSucceeded = 13
 robotPairFailed = 14
+ping = 19
 
 if len(sys.argv) != 3:
     print "Usage: python", sys.argv[0], "<server-ip> <server-portno>"
@@ -38,7 +39,9 @@ except:
 print 'connected to server %s:%s' % server_address
 
 sock.sendall(chr(robotPair))
+print 'sent data'
 data = sock.recv(1)
+print 'got data'
 if ord(data[0]) != robotPairSucceeded:
     print 'pair request denied by server'
     sock.sendall(chr(kill))
@@ -61,17 +64,23 @@ while True:
             print 'nav request to', data
 
             if data == 'xy':
+                print 'nav failed'
                 sock.sendall(chr(gotoFailed))
             else:
                 time.sleep(10)
+                print 'nav succeeded'
                 sock.sendall(chr(gotoDone))
-        elif ord(data[0] == kill):
+        elif ord(data[0]) == ping:
+            print 'pinged by server'
+            sock.sendall(chr(ping))
+        elif ord(data[0]) == kill:
             print 'got kill'
             break
         else:
             print 'got bad data'
             break
     except:
+        print 'exception'
         break
 
 print 'shutting down...'

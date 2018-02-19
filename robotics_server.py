@@ -115,7 +115,7 @@ def socketEventLoop(connection):
                     rosSocket = connection
                     connection.sendall(chr(robotPairSucceeded))
                     connection.settimeout(None)
-		    return
+	                return
                 else:
                     rosSocket.sendall(chr(ping))
                     data = rosSocket.recv(1)
