@@ -1,3 +1,5 @@
+import time
+
 # True only if a navigation request is in progress.
 navPending = False
 # True only if the pending navigation request needs to be cancelled.
@@ -10,24 +12,29 @@ needsCancel = False
 # If needsCancel is True (value may change during execution),
 # set needsCancel to False and return 2 as soon as possible.
 def goTo(name):
-    # TODO: Implement this.
     global navPending
     global needsCancel
-    return 1
 
-# Navigate the robot to its default location.
-# Set navPending to True when called, then set to False right before returning.
-# Return 0 if navigation completed successfully.
-# Return 1 if navigation failed.
-# If needsCancel is True (value may change during execution),
-# set needsCancel to False and return 2 as soon as possible.
+    navPending = True
+
+    if name == 'xy':
+        navPending = False
+        return 1
+
+    for x in range(0, 10):
+        if needsCancel:
+            needsCancel = False
+            navPending = False
+            return 2
+        time.sleep(1)
+
+    navPending = False
+    return 0
+
 def goHome():
-    # TODO: Implement this.
-    global navPending
-    global needsCancel
-    return 1
+    time.sleep(5)
+    return 0
 
-# Requests that navigation be cancelled. Do not modify.
 def cancel():
     global navPending
     global needsCancel

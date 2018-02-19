@@ -72,7 +72,10 @@ class RequestHandler {
         case Commands.speak: break
         case Commands.unpair: break
         case Commands.kill: break
-        default: fatalError("Tried to send unrecognized command to server.")
+        case Commands.cancelGoto: break
+        case Commands.speakerPair: break
+        case Commands.speakerUnpair: break
+        default: fatalError("Tried to send unsupported command to server.")
         }
         
         self.sendData(data)
