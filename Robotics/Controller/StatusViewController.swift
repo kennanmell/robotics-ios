@@ -23,6 +23,6 @@ class StatusViewController: UIViewController {
     }
     
     @objc func cancelPressed() {
-        navigationController?.popViewController(animated: true)
+        RequestHandler.instance.send(command: Commands.cancelGoto)
     }
 }

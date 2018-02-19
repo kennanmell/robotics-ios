@@ -18,6 +18,14 @@ struct Commands {
     static let goto: UInt8 = 7
     static let gotoDone: UInt8 = 8
     static let gotoFailed: UInt8 = 9
-    static let update: UInt8 = 10
+    // 10 reserved for update (not implemented)
     static let kill: UInt8 = 11
+    // 12-14 reserved for robot-server pairing
+    static let speakerPair: UInt8 = 15
+    static let speakerPairSucceeded: UInt8 = 16
+    static let speakerPairFailed: UInt8 = 17
+    static let speakerUnpair: UInt8 = 18
+    // 19 reserved for ping
+    static let cancelGoto: UInt8 = 20
+    static let cancelGotoSucceeded: UInt8 = 21
 }

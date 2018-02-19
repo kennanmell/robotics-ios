@@ -20,6 +20,9 @@ robotPairSucceeded = 13
 robotPairFailed = 14
 ping = 19
 
+# 0 = no pending nav, 1 = nav pending, 2 = nav complete (success), 3 = nav complete (failed)
+currentStatus = 0
+
 if len(sys.argv) != 3:
     print "Usage: python", sys.argv[0], "<server-ip> <server-portno>"
     exit()

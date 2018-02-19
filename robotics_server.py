@@ -7,12 +7,26 @@ pairedInstance = None
 shutdown = False
 rosSocket = None
 pairedSpeaker = None
+navPending = False
+
+def robotResponse(connection):
+    data = rosSocket.recv(1)
+    if ord(data[0]) != gotoDone and ord(data[0]) != gotoFailed and ord(data[0]) != cancelGotoSucceeded:
+        print 'goto failed (ros node unresponsive)'
+        print 'disconnecting from ros node'
+        rosSocket = None
+        connection.sendall(chr(gotoFailed))
+    else:
+        print 'goto finished'
+        connection.sendall(data)
+    navPending = False
 
 def socketEventLoop(connection):
     global pairedInstance
     global shutdown
     global rosSocket
     global pairedSpeaker
+    global navPending
 
     pair = 1
     pairSucceeded = 2
@@ -34,6 +48,8 @@ def socketEventLoop(connection):
     speakerPairFailed = 17
     speakerUnpair = 18
     ping = 19
+    cancelGoto = 20
+    cancelGotoSucceeded = 21
 
     attempts = 0
 
@@ -43,7 +59,7 @@ def socketEventLoop(connection):
             if shutdown:
                 break
 
-            if pairedInstance == connection:
+            if pairedInstance == connection and !navPending:
                 attempts += 1
                 if attempts >= 14:
                     print 'force unpairing with', str(connection)
@@ -86,26 +102,19 @@ def socketEventLoop(connection):
                 while len(data) < titleLen + 5:
                     data += connection.recv(titleLen + 5 - len(data))
 
-		if pairedInstance != connection:
+                if pairedInstance != connection:
                     print 'ignoring goto (unpaired)'
-		    continue
+                    continue
 
                 if rosSocket is None:
                     print 'goto failed (ros node not connected)'
                     connection.sendall(chr(gotoFailed))
 
-                rosSocket.sendall(data)
-                data = rosSocket.recv(1)
-                if ord(data[0]) != gotoDone and ord(data[0]) != gotoFailed:
-                    print 'goto failed (ros node unresponsive)'
-                    print 'disconnecting from ros node'
-                    rosSocket = None
-                    connection.sendall(chr(gotoFailed))
-                else:
-                    print 'goto finished'
-                    connection.sendall(data)
-                #locLength = (ord(data[1]) << 24) | (ord(data[2]) << 16) | (ord(data[3]) << 8) | ord(data[4]])
+                navPending = True
                 attempts = 0
+                rosSocket.sendall(data)
+                thread = Thread(target = robotResponse, args = (connection, ))
+                thread.start()
             elif ord(data[0]) == kill:
                 print 'got kill from', str(connection)
                 break
@@ -144,6 +153,16 @@ def socketEventLoop(connection):
                     pairedSpeaker = None
                     attempts = 0
                     connection.settimeout(5)
+            elif ord(data[0]) == cancelGoto:
+                if pairedInstance != connection:
+                    print 'ignoring cancel (unpaired)'
+                    continue
+
+                if rosSocket is None:
+                    print 'can\'t cancel (ros node not connected)'
+                    connection.sendall(chr(gotoFailed))
+
+                rosSocket.sendall(chr(cancelGoto))
             else:
                 print 'force kill: unrecognized data from', str(connection)
 		print 'data:', ord(data[0])

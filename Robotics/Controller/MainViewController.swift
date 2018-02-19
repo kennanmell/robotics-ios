@@ -177,8 +177,11 @@ class MainViewController: UIViewController, StreamDelegate, UITableViewDelegate,
                     }
                 case Commands.speakDone:
                     print("speak done")
-                case Commands.update:
-                    print("got update")
+                case Commands.cancelGotoSucceeded:
+                    print("got cancel succeeded")
+                    if self.navigationController?.visibleViewController is StatusViewController {
+                        self.navigationController?.popViewController(animated: true)
+                    }
                 case Commands.unpair:
                     print("got unpair")
                     mainView.pairButton.backgroundColor =
