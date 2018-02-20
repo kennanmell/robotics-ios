@@ -1,7 +1,14 @@
+import fetch_api
+import rospy
+
 # True only if a navigation request is in progress.
 navPending = False
 # True only if the pending navigation request needs to be cancelled.
 needsCancel = False
+
+def wait_for_time():
+    while rospy.Time().now().to_sec() == 0:
+        pass
 
 # Navigate the robot to room 'name'.
 # Set navPending to True when called, then set to False right before returning.
@@ -13,6 +20,17 @@ def goTo(name):
     # TODO: Implement this.
     global navPending
     global needsCancel
+    navPending = True
+    if name == 'lower torso':
+        torso = fetch_api.Torso()
+        torso.set_height(0.0)
+        navPending = False
+        return 0
+    elif name == 'raise torso':
+        torso = fetch_api.Torso()
+        torso.set_height(0.4)
+        navPending = False
+        return 0
     return 1
 
 # Navigate the robot to its default location.
