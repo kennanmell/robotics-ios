@@ -100,7 +100,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
     
     @objc func speakPressed() {
         if !RequestHandler.instance.paired {
-            RequestHandler.instance.send(command: Commands.pair)
+            RequestHandler.instance.sendPair()
         }
         RequestHandler.instance.send(command: Commands.speak)
     }
@@ -115,7 +115,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
             mainView.pairButton.setTitle("Pair", for: .normal)
             RequestHandler.instance.paired = false
         } else {
-            RequestHandler.instance.send(command: Commands.pair)
+            RequestHandler.instance.sendPair()
         }
     }
     
@@ -311,7 +311,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: "MainToStatus", sender: self)
         if !RequestHandler.instance.paired {
-            RequestHandler.instance.send(command: Commands.pair)
+            RequestHandler.instance.sendPair()
         }
         globalNavGoal = Settings.instance.roomArray[indexPath.row]
         RequestHandler.instance.sendGoto(room: Settings.instance.roomArray[indexPath.row])

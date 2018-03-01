@@ -29,16 +29,17 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     }
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        return 4
+        return 5
     }
     
     override func tableView(_ tableView: UITableView,
                             titleForHeaderInSection section: Int) -> String? {
         switch section {
         case 0:  return "Server Location"
-        case 1:  return "Rooms"
-        case 2: return "Info"
-        case 3: return "Other"
+        case 1:  return "User Settings"
+        case 2:  return "Rooms"
+        case 3:  return "Info"
+        case 4:  return "Other"
         default: return nil
         }
     }
@@ -47,9 +48,10 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                             numberOfRowsInSection section: Int) -> Int {
         switch section {
         case 0:  return 2
-        case 1:  return Settings.instance.roomArray.count + 1
-        case 2: return 3
-        case 3: return 1
+        case 1:  return 2
+        case 2:  return Settings.instance.roomArray.count + 1
+        case 3:  return 3
+        case 4:  return 1
         default: return 0
         }
     }
@@ -57,7 +59,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     override func tableView(_ tableView: UITableView,
                             canEditRowAt indexPath: IndexPath) -> Bool {
         switch indexPath.section {
-        case 1: return indexPath.row != Settings.instance.roomArray.count
+        case 2: return indexPath.row != Settings.instance.roomArray.count
         default: return false
         }
     }
@@ -87,6 +89,26 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             }
         } else if indexPath.section == 1 {
             let result = UITableViewCell()
+            if indexPath.row == 0 {
+                result.textLabel?.text = "Left hand mode"
+                result.selectionStyle = .none
+                let leftSwitch = UISwitch()
+                leftSwitch.setOn(Settings.instance.leftHandMode, animated: false)
+                leftSwitch.addTarget(self,
+                                     action: #selector(SettingsViewController.leftHandToggled),
+                                     for: .valueChanged)
+                result.addSubview(leftSwitch)
+                leftSwitch.frame = CGRect(x: self.view.frame.width * 0.96 - leftSwitch.frame.width,
+                                          y: 44 / 2 - leftSwitch.frame.height / 2,
+                                          width: leftSwitch.frame.width,
+                                          height: leftSwitch.frame.height)
+            } else if indexPath.row == 1 {
+                result.textLabel?.text = "Height (in): " + String(Settings.instance.height)
+                result.accessoryType = .disclosureIndicator
+            }
+            return result
+        } else if indexPath.section == 2 {
+            let result = UITableViewCell()
             if indexPath.row == Settings.instance.roomArray.count {
                 result.textLabel?.text = "Add room..."
                 result.accessoryView = UIButton(type: .contactAdd)
@@ -96,7 +118,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 result.textLabel?.text = Settings.instance.roomArray[indexPath.row]
             }
             return result
-        } else if indexPath.section == 2 {
+        } else if indexPath.section == 3 {
             let result = UITableViewCell()
             result.selectionStyle = .none
             if indexPath.row == 0 {
@@ -107,7 +129,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
                 result.textLabel?.text = "Version 1.0"
             }
             return result
-        } else if indexPath.section == 3 {
+        } else if indexPath.section == 4 {
             let result = UITableViewCell()
             result.textLabel?.text = "Speaker mode"
             result.accessoryType = .disclosureIndicator
@@ -155,6 +177,25 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             
             self.present(alert, animated: true, completion: nil)
         } else if indexPath.section == 1 {
+            if indexPath.row == 1 {
+                let alert = UIAlertController(title: "Update height", message: "", preferredStyle: .alert)
+                
+                alert.addTextField { (textField) in
+                    textField.text = String(Settings.instance.height)
+                    textField.delegate = self
+                }
+                
+                alert.addAction(UIAlertAction(title: "OK",
+                                              style: .default,
+                                              handler: { [weak alert] (_) in
+                                                let newVal = alert?.textFields![0].text
+                                                Settings.instance.height = Int(newVal!)!
+                                                self.tableView.reloadData()
+                }))
+                
+                self.present(alert, animated: true, completion: nil)
+            }
+        } else if indexPath.section == 2 {
             if indexPath.row == Settings.instance.roomArray.count {
                 let alert = UIAlertController(title: "New room", message: "Enter the room name.", preferredStyle: .alert)
                 
@@ -180,7 +221,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
             } else {
                 self.tableView.deselectRow(at: indexPath, animated: false)
             }
-        } else if indexPath.section == 3 {
+        } else if indexPath.section == 4 {
             if (AppDelegate.mvc?.connectedToServer)! {
                 performSegue(withIdentifier: "SettingsToSpeaker", sender: self)
                 if RequestHandler.instance.paired {
@@ -199,7 +240,7 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
     
     override func tableView(_ tableView: UITableView,
                             heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return UITableViewAutomaticDimension
+        return 44
     }
     
     // MARK: UITextFieldDelegate
@@ -210,5 +251,10 @@ class SettingsViewController: UITableViewController, UITextFieldDelegate {
         let compSepByCharInSet = string.components(separatedBy: aSet)
         let numberFiltered = compSepByCharInSet.joined(separator: "")
         return string == numberFiltered
+    }
+    
+    // MARK: Callbacks
+    @objc func leftHandToggled() {
+        Settings.instance.leftHandMode = !Settings.instance.leftHandMode
     }
 }

@@ -33,6 +33,8 @@ class Settings: NSObject, NSCoding {
     var serverPort = 5000
     var roomArray = Array<String>()
     var speechText = "Navigation assistance here."
+    var leftHandMode = false
+    var height = 70
     
     // MARK: NSCoding
     
@@ -41,6 +43,8 @@ class Settings: NSObject, NSCoding {
         aCoder.encode(serverPort, forKey: SettingsEncodingKeys.serverPortKey)
         aCoder.encode(roomArray.count, forKey: SettingsEncodingKeys.roomCountKey)
         aCoder.encode(speechText, forKey: SettingsEncodingKeys.speechTextKey)
+        aCoder.encode(leftHandMode, forKey: SettingsEncodingKeys.leftHandModeKey)
+        aCoder.encode(height, forKey: SettingsEncodingKeys.heightKey)
         
         for i in 0..<roomArray.count {
             aCoder.encode(roomArray[i])
@@ -54,7 +58,8 @@ class Settings: NSObject, NSCoding {
         self.serverPort = aDecoder.decodeInteger(forKey: SettingsEncodingKeys.serverPortKey)
         self.speechText =
             aDecoder.decodeObject(forKey: SettingsEncodingKeys.speechTextKey) as! String
-        
+        self.leftHandMode = aDecoder.decodeBool(forKey: SettingsEncodingKeys.leftHandModeKey)
+        self.height = Int(aDecoder.decodeInt32(forKey: SettingsEncodingKeys.heightKey))
         let roomCount = aDecoder.decodeInteger(forKey: SettingsEncodingKeys.roomCountKey)
         for _ in 0..<roomCount {
             roomArray.append(aDecoder.decodeObject() as! String)
@@ -68,4 +73,6 @@ private struct SettingsEncodingKeys {
     static let serverPortKey = "com.arobotics.ios.serverPortKey"
     static let roomCountKey = "com.arobotics.ios.roomCountKey"
     static let speechTextKey = "com.arobotics.ios.speechTextKey"
+    static let leftHandModeKey = "com.arobotics.ios.leftHandModeKey"
+    static let heightKey = "com.arobotics.ios.heightKey"
 }

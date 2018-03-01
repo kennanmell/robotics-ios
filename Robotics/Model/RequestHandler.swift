@@ -63,6 +63,25 @@ class RequestHandler {
         self.sendData(data)
     }
     
+    func sendPair() {
+        var data = Data()
+        data.append(Commands.pair)
+        
+        if Settings.instance.leftHandMode {
+            data.append(UInt8(1))
+        } else {
+            data.append(UInt8(0))
+        }
+        
+        let height = Settings.instance.height
+        data.append(UInt8(height >> 24))
+        data.append(UInt8(height >> 16))
+        data.append(UInt8(height >> 8))
+        data.append(UInt8(height))
+        
+        self.sendData(data)
+    }
+    
     func send(command: UInt8) {
         var data = Data()
         data.append(command)

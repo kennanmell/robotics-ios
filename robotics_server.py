@@ -97,6 +97,11 @@ def socketEventLoop(connection):
             data = connection.recv(1)
             #instanceId = (ord(data[0]) << 8) | ord(data[1])
             if ord(data[0]) == pair:
+                while len(data) < 6:
+                    data += connection.recv(6 - len(data))
+
+                leftHandMode = data[1] == 1
+                userHeight = (ord(data[2]) << 24) | (ord(data[3]) << 16) | (ord(data[4]) << 8) | ord(data[5])
                 if pairedInstance == None or pairedInstance == connection:
                     print 'paired with', str(connection)
                     pairedInstance = connection
