@@ -3,9 +3,14 @@ import sys
 from urllib2 import urlopen
 from threading import Thread
 import imp
+
 try:
     imp.find_module('rospy')
+    import rospy
     from ros_node import goTo, goHome, cancel
+    rospy.init_node('ios_app')
+    while rospy.Time().now().to_sec() == 0:
+        pass
 except ImportError:
     print 'rospy not installed... using dummy navigation'
     from dummy_ros_node import goTo, goHome, cancel
