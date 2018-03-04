@@ -122,7 +122,7 @@ while True:
             print 'got bad data'
             break
     except:
-        print 'exception'
+        print 'exception: ', sys.exc_info()[0]
         break
 
 print 'shutting down...'
