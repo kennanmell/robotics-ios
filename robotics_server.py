@@ -9,6 +9,28 @@ rosSocket = None
 pairedSpeaker = None
 navPending = False
 
+def findMeResponse(connection):
+    global pairedInstance
+    global rosSocket
+    global navPending
+
+    findMeSucceeded = 26
+    findMeFailed = 27
+
+    data = rosSocket.recv(1)
+    if ord(data[0]) != findMeSucceeded and ord(data[0]) != findMeFailed:
+        print 'find failed (ros node unresponsive)'
+        print 'disconnecting from ros node'
+        rosSocket = None
+        connection.sendall(chr(findMeFailed))
+    else:
+        print 'find finished'
+        try:
+            connection.sendall(data)
+        except:
+            pass
+    navPending = False
+
 def robotResponse(connection):
     global pairedInstance
     global rosSocket
@@ -73,6 +95,9 @@ def socketEventLoop(connection):
     goHome = 22
     goHomeSucceeded = 23
     speakerSpeak = 24
+    findMe = 25
+    findMeSucceeded = 26
+    findMeFailed = 27
 
     attempts = 0
 
@@ -157,6 +182,22 @@ def socketEventLoop(connection):
                 rosSocket.sendall(data)
                 thread = Thread(target = robotResponse, args = (connection, ))
                 thread.start()
+            elif ord(data[0]) == findMe:
+                print 'got find me from', str(connection)
+                navPending = True
+                attempts = 0
+                thread = Thread(target = findMeResponse, args = (connection, ))
+                thread.start()
+            elif ord(data[0]) == cancelFindMe:
+                print 'got cancel find request'
+                if pairedInstance != connection:
+                    print 'ignoring cancel find (unpaired)'
+                    continue
+
+                if rosSocket is None:
+                    print 'can\'t cancel find (ros node not connected)'
+
+                rosSocket.sendall(chr(cancelFindMe))
             elif ord(data[0]) == kill:
                 print 'got kill from', str(connection)
                 break

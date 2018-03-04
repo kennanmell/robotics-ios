@@ -22,6 +22,13 @@
 		22EDB8822037BEC20008A018 /* RequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22EDB8812037BEC20008A018 /* RequestHandler.swift */; };
 		22FEC6E6203A26AC00D2FF11 /* SpeakerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEC6E5203A26AC00D2FF11 /* SpeakerView.swift */; };
 		22FEC6E8203AA6B800D2FF11 /* SpeakerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FEC6E7203AA6B800D2FF11 /* SpeakerViewController.swift */; };
+		22FF93FC204BC2CC00F6264E /* PageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF93FB204BC2CC00F6264E /* PageView.swift */; };
+		22FF93FE204BCA7300F6264E /* IntroViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF93FD204BCA7300F6264E /* IntroViewController.swift */; };
+		22FF9400204BCE8C00F6264E /* SpeakViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF93FF204BCE8B00F6264E /* SpeakViewController.swift */; };
+		22FF9402204BD1F600F6264E /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF9401204BD1F600F6264E /* IntroView.swift */; };
+		22FF9404204BD90300F6264E /* FindMeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF9403204BD90300F6264E /* FindMeViewController.swift */; };
+		22FF9406204BD91500F6264E /* FindMeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF9405204BD91500F6264E /* FindMeView.swift */; };
+		22FF9408204C84FD00F6264E /* FindMePendingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22FF9407204C84FD00F6264E /* FindMePendingViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,6 +49,13 @@
 		22EDB8812037BEC20008A018 /* RequestHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestHandler.swift; sourceTree = "<group>"; };
 		22FEC6E5203A26AC00D2FF11 /* SpeakerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerView.swift; sourceTree = "<group>"; };
 		22FEC6E7203AA6B800D2FF11 /* SpeakerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakerViewController.swift; sourceTree = "<group>"; };
+		22FF93FB204BC2CC00F6264E /* PageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageView.swift; sourceTree = "<group>"; };
+		22FF93FD204BCA7300F6264E /* IntroViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroViewController.swift; sourceTree = "<group>"; };
+		22FF93FF204BCE8B00F6264E /* SpeakViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeakViewController.swift; sourceTree = "<group>"; };
+		22FF9401204BD1F600F6264E /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
+		22FF9403204BD90300F6264E /* FindMeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindMeViewController.swift; sourceTree = "<group>"; };
+		22FF9405204BD91500F6264E /* FindMeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindMeView.swift; sourceTree = "<group>"; };
+		22FF9407204C84FD00F6264E /* FindMePendingViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FindMePendingViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -103,6 +117,9 @@
 				226F005D203813CB0083E882 /* NoServerView.swift */,
 				22FEC6E5203A26AC00D2FF11 /* SpeakerView.swift */,
 				22EDB87920378D180008A018 /* StatusView.swift */,
+				22FF93FB204BC2CC00F6264E /* PageView.swift */,
+				22FF9401204BD1F600F6264E /* IntroView.swift */,
+				22FF9405204BD91500F6264E /* FindMeView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -114,6 +131,10 @@
 				22EDB86E203515AE0008A018 /* SettingsViewController.swift */,
 				22FEC6E7203AA6B800D2FF11 /* SpeakerViewController.swift */,
 				22EDB87B20378D350008A018 /* StatusViewController.swift */,
+				22FF93FD204BCA7300F6264E /* IntroViewController.swift */,
+				22FF93FF204BCE8B00F6264E /* SpeakViewController.swift */,
+				22FF9403204BD90300F6264E /* FindMeViewController.swift */,
+				22FF9407204C84FD00F6264E /* FindMePendingViewController.swift */,
 			);
 			path = Controller;
 			sourceTree = "<group>";
@@ -191,13 +212,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				22FEC6E8203AA6B800D2FF11 /* SpeakerViewController.swift in Sources */,
+				22FF9402204BD1F600F6264E /* IntroView.swift in Sources */,
 				226F005E203813CB0083E882 /* NoServerView.swift in Sources */,
+				22FF9408204C84FD00F6264E /* FindMePendingViewController.swift in Sources */,
 				22EDB85F203502C00008A018 /* MainViewController.swift in Sources */,
 				22EDB85D203502C00008A018 /* AppDelegate.swift in Sources */,
+				22FF93FC204BC2CC00F6264E /* PageView.swift in Sources */,
 				226F005C203800C20083E882 /* Commands.swift in Sources */,
+				22FF9406204BD91500F6264E /* FindMeView.swift in Sources */,
 				22EDB87E2037B2450008A018 /* Settings.swift in Sources */,
 				22EDB87C20378D350008A018 /* StatusViewController.swift in Sources */,
+				22FF9400204BCE8C00F6264E /* SpeakViewController.swift in Sources */,
+				22FF9404204BD90300F6264E /* FindMeViewController.swift in Sources */,
 				22EDB8822037BEC20008A018 /* RequestHandler.swift in Sources */,
+				22FF93FE204BCA7300F6264E /* IntroViewController.swift in Sources */,
 				22EDB86F203515AE0008A018 /* SettingsViewController.swift in Sources */,
 				22EDB8762037832C0008A018 /* MainView.swift in Sources */,
 				22EDB87A20378D180008A018 /* StatusView.swift in Sources */,

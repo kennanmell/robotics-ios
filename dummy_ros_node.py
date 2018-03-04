@@ -40,3 +40,25 @@ def cancel():
     global needsCancel
     if navPending:
         needsCancel = True
+
+def find():
+    global navPending
+    global needsCancel
+
+    navPending = True
+
+    for x in range(0, 5):
+        if needsCancel:
+            needsCancel = False
+            navPending = False
+            return 2
+        time.sleep(1)
+
+    navPending = False
+    return 0
+
+def cancelFind():
+    global navPending
+    global needsCancel
+    if navPending:
+        needsCancel = True

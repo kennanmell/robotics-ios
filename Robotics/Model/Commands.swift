@@ -30,4 +30,8 @@ struct Commands {
     static let cancelGotoSucceeded: UInt8 = 21
     // 22 and 23 reserved for go home
     static let speakerSpeak: UInt8 = 24
+    static let findMe: UInt8 = 25
+    static let findMeSucceeded: UInt8 = 26
+    static let findMeFailed: UInt8 = 27
+    static let cancelFindMe: UInt8 = 28
 }

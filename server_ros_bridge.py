@@ -7,13 +7,13 @@ import imp
 try:
     imp.find_module('rospy')
     import rospy
-    from ros_node import goTo, goHome, cancel
+    from ros_node import goTo, goHome, cancel, find, cancelFind
     rospy.init_node('ios_app')
     while rospy.Time().now().to_sec() == 0:
         pass
 except ImportError:
     print 'rospy not installed... using dummy navigation'
-    from dummy_ros_node import goTo, goHome, cancel
+    from dummy_ros_node import goTo, goHome, cancel, find, cancelFind
 
 pair = 1
 pairSucceeded = 2
@@ -34,7 +34,22 @@ cancelGoto = 20
 cancelGotoSucceeded = 21
 goHomeReq = 22
 goHomeDone = 23
+findMe = 25
+findMeSucceeded = 26
+findMeFailed = 27
+cancelFindMe = 28
 
+def handleFind(sock):
+    findMeSucceeded = 26
+    findMeFailed = 27
+
+    result = find()
+    if result == 0:
+        print 'find succeeded'
+        sock.sendall(findMeSucceeded)
+    else:
+        print 'find failed'
+        sock.sendall(findMeFailed)
 
 def handleNav(sock, name):
     gotoDone = 8
@@ -108,6 +123,13 @@ while True:
         elif ord(data[0]) == cancelGoto:
             print 'got cancel request'
             cancel()
+        elif ord(data[0]) == findMe:
+            print 'got find me'
+            thread = Thread(target = handleFind, args = (sock, ))
+            thread.start()
+        elif ord(data[0]) == cancelFindMe:
+            print 'got cancel find'
+            cancelFind()
         elif ord(data[0]) == ping:
             print 'pinged by server'
             sock.sendall(chr(ping))

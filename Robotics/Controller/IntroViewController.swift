@@ -1,69 +1,61 @@
 //
-//  MainViewController.swift
+//  IntroViewController.swift
 //  Robotics
 //
-//  Created by Kennan Mell on 2/14/18.
+//  Created by Kennan Mell on 3/3/18.
 //  Copyright © 2018 Kennan Mell. All rights reserved.
 //
 
 import UIKit
 import AVFoundation
 
-var globalNavGoal: String? = nil
-
-class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerDelegate,
-                          UITableViewDelegate, UITableViewDataSource {
-    
+class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerDelegate {
     let maxReadLength = 2
     var synthesizer: AVSpeechSynthesizer? = nil
     var isSpeaking = false
-    
-    var mainView: MainView {
-        return self.view as! MainView
+
+    var introView: IntroView {
+        return self.view as! IntroView
     }
     
     var connectedToServer: Bool {
-        return mainView.noServerView.isHidden
+        return introView.noServerView.isHidden
     }
     
     required init?(coder aDecoder: NSCoder) {
         super.init(coder: aDecoder)
         RequestHandler.instance.streamDelegate = self
-        //AppDelegate.mvc = self
+        AppDelegate.mvc = self
         RequestHandler.instance.connectToServer()
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        mainView.settingsButton.addGestureRecognizer(
-            UITapGestureRecognizer(target: self,
-                                   action: #selector(MainViewController.settingsPressed)))
         
-        mainView.speakButton.addGestureRecognizer(
-            UITapGestureRecognizer(target: self,
-                                   action: #selector(MainViewController.speakPressed)))
-
-        mainView.pairButton.addGestureRecognizer(
-            UITapGestureRecognizer(target: self,
-                                   action: #selector(MainViewController.pairPressed)))
+        introView.textLabel.text =
+            "This app controls a robot that helps you get where you need to go!"
         
-        mainView.noServerView.settingsButton.addGestureRecognizer(
+        let startButton = UIButton()
+        startButton.setTitle("Get Started", for: .normal)
+        startButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
-                                   action: #selector(MainViewController.settingsPressed)))
+                                   action: #selector(IntroViewController.startTapped)))
+        introView.addButton(button: startButton)
         
-        mainView.noServerView.retryButton.addGestureRecognizer(
+        let settingsButton = UIButton()
+        settingsButton.setTitle("Settings", for: .normal)
+        settingsButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
-                                   action: #selector(MainViewController.retryPressed)))
-
-        mainView.roomTableView.delegate = self
-        mainView.roomTableView.dataSource = self
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        mainView.roomTableView.reloadData()
-        willEnterForeground()
+                                   action: #selector(IntroViewController.settingsTapped)))
+        introView.addButton(button: settingsButton)
+        
+        introView.noServerView.settingsButton.addGestureRecognizer(
+            UITapGestureRecognizer(target: self,
+                                   action: #selector(IntroViewController.settingsTapped)))
+        
+        introView.noServerView.retryButton.addGestureRecognizer(
+            UITapGestureRecognizer(target: self,
+                                   action: #selector(IntroViewController.retryTapped)))
     }
     
     func didEnterBackground() {
@@ -76,52 +68,18 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
         }
     }
     
-    func willEnterForeground() {
-        if RequestHandler.instance.paired {
-            mainView.pairButton.backgroundColor =
-                UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
-            mainView.pairButton.layer.shadowColor =
-                UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0).cgColor
-            mainView.pairButton.setTitle("Unpair", for: .normal)
-        } else {
-            mainView.pairButton.backgroundColor =
-                UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
-            mainView.pairButton.layer.shadowColor =
-                UIColor(red: 0, green: 0, blue: 100.0 / 255.0, alpha: 1.0).cgColor
-            mainView.pairButton.setTitle("Pair", for: .normal)
-        }
-    }
-    
     // MARK: Callbacks
     
-    @objc func settingsPressed() {
-        performSegue(withIdentifier: "MainToSettings", sender: self)
+    @objc func startTapped() {
+        RequestHandler.instance.sendPair()
     }
     
-    @objc func speakPressed() {
-        if !RequestHandler.instance.paired {
-            RequestHandler.instance.sendPair()
-        }
-        RequestHandler.instance.send(command: Commands.speak)
+    @objc func settingsTapped() {
+        performSegue(withIdentifier: "IntroToSettings", sender: self)
     }
     
-    @objc func pairPressed() {
-        if RequestHandler.instance.paired {
-            RequestHandler.instance.send(command: Commands.unpair)
-            mainView.pairButton.backgroundColor =
-                UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
-            mainView.pairButton.layer.shadowColor =
-                UIColor(red: 0, green: 0, blue: 100.0 / 255.0, alpha: 1.0).cgColor
-            mainView.pairButton.setTitle("Pair", for: .normal)
-            RequestHandler.instance.paired = false
-        } else {
-            RequestHandler.instance.sendPair()
-        }
-    }
-    
-    @objc func retryPressed() {
+    @objc func retryTapped() {
         RequestHandler.instance.connectToServer()
-        willEnterForeground()
     }
     
     // MARK: StreamDelegate
@@ -141,12 +99,10 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                 switch buffer[0] {
                 case Commands.pairSucceeded:
                     print("pair succeeded")
-                    mainView.pairButton.backgroundColor =
-                        UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
-                    mainView.pairButton.layer.shadowColor =
-                        UIColor(red: 100.0 / 255.0, green: 0, blue: 0, alpha: 1.0).cgColor
-                    mainView.pairButton.setTitle("Unpair", for: .normal)
                     RequestHandler.instance.paired = true
+                    if self.navigationController?.visibleViewController is IntroViewController {
+                        performSegue(withIdentifier: "IntroToSpeak", sender: self)
+                    }
                 case Commands.pairFailed:
                     print("pair failed")
                     globalNavGoal = nil
@@ -157,9 +113,9 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                     alert.addAction(UIAlertAction(title: "OK",
                                                   style: .default,
                                                   handler: { _ in
-                        if self.navigationController?.visibleViewController is StatusViewController {
-                            self.navigationController?.popViewController(animated: true)
-                        }
+                                                    if self.navigationController?.visibleViewController is StatusViewController {
+                                                        self.navigationController?.popViewController(animated: true)
+                                                    }
                     }))
                     
                     self.present(alert, animated: true, completion: nil)
@@ -170,13 +126,13 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                         let alert = UIAlertController(title: "You have arrived.",
                                                       message: nil,
                                                       preferredStyle: .alert)
-                    
+                        
                         alert.addAction(UIAlertAction(title: "OK",
                                                       style: .default,
                                                       handler: { _ in
-                            self.navigationController?.popViewController(animated: true)
+                                                        self.navigationController?.popViewController(animated: true)
                         }))
-                    
+                        
                         self.present(alert, animated: true, completion: nil)
                     }
                 case Commands.gotoFailed:
@@ -190,7 +146,7 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                         alert.addAction(UIAlertAction(title: "OK",
                                                       style: .default,
                                                       handler: { _ in
-                            self.navigationController?.popViewController(animated: true)
+                                                        self.navigationController?.popViewController(animated: true)
                         }))
                         
                         self.present(alert, animated: true, completion: nil)
@@ -207,13 +163,13 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                 case Commands.speakFailed:
                     print("got speak failed")
                     let alert = UIAlertController(title: "Speak failed",
-                                                message: "No speaker is connected.",
-                                         preferredStyle: .alert)
-                        
+                                                  message: "No speaker is connected.",
+                                                  preferredStyle: .alert)
+                    
                     alert.addAction(UIAlertAction(title: "OK",
                                                   style: .default,
-                                                handler: nil))
-                        
+                                                  handler: nil))
+                    
                     self.present(alert, animated: true, completion: nil)
                 case Commands.cancelGotoSucceeded:
                     print("got cancel succeeded")
@@ -222,16 +178,14 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                     }
                 case Commands.unpair:
                     print("got unpair")
-                    mainView.pairButton.backgroundColor =
-                        UIColor(red: 0, green: 0, blue: 200.0 / 255.0, alpha: 1.0)
-                    mainView.pairButton.layer.shadowColor =
-                        UIColor(red: 0, green: 0, blue: 100.0 / 255.0, alpha: 1.0).cgColor
-                    mainView.pairButton.setTitle("Pair", for: .normal)
                     RequestHandler.instance.paired = false
+                    while !(self.navigationController?.visibleViewController is IntroViewController) {
+                        self.navigationController?.popViewController(animated: false)
+                    }
                     
                     let alert = UIAlertController(title: "Unpaired",
-                                                message: "You were unpaired with the robot due to inactivity.",
-                                         preferredStyle: .alert)
+                                                  message: "You were unpaired with the robot due to inactivity.",
+                                                  preferredStyle: .alert)
                     
                     alert.addAction(UIAlertAction(title: "OK",
                                                   style: .default,
@@ -244,13 +198,13 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                     print("got speaker pair failed")
                     if self.navigationController?.visibleViewController is SpeakerViewController {
                         let alert = UIAlertController(title: "Pair failed",
-                                                    message: "Another speaker is already connected.",
-                                             preferredStyle: .alert)
+                                                      message: "Another speaker is already connected.",
+                                                      preferredStyle: .alert)
                         
                         alert.addAction(UIAlertAction(title: "OK",
                                                       style: .default,
-                                                    handler: { _ in
-                            self.navigationController?.popViewController(animated: true)
+                                                      handler: { _ in
+                                                        self.navigationController?.popViewController(animated: true)
                         }))
                         
                         self.present(alert, animated: true, completion: nil)
@@ -258,32 +212,35 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                 default:
                     // Includes Commands.kill
                     print(buffer[0])
+                    while !(self.navigationController?.visibleViewController is IntroViewController) {
+                        self.navigationController?.popViewController(animated: false)
+                    }
                     self.hideNoServerView(false)
                     RequestHandler.instance.paired = false
                 }
             }
-        case Stream.Event.endEncountered:
-            print("new message received")
         case Stream.Event.errorOccurred:
             print("error occurred")
+            while !(self.navigationController?.visibleViewController is IntroViewController) {
+                self.navigationController?.popViewController(animated: false)
+            }
             self.hideNoServerView(false)
+            RequestHandler.instance.paired = false
         case Stream.Event.openCompleted:
             print("open completed")
             self.hideNoServerView(true)
-        case Stream.Event.hasSpaceAvailable:
-            print("has space available")
         default:
-            print("some other event...")
+            print("unhandled event...")
             break
         }
     }
     
     func hideNoServerView(_ hide: Bool) {
-        mainView.noServerView.isHidden = hide
-        mainView.pairButton.isHidden = !hide
-        mainView.speakButton.isHidden = !hide
-        mainView.roomTableView.isHidden = !hide
-        mainView.settingsButton.isHidden = !hide
+        self.introView.noServerView.isHidden = hide
+        self.introView.textLabel.isHidden = !hide
+        for button in self.introView.buttonArray {
+            button.isHidden = !hide
+        }
     }
     
     // MARK: AVSpeechSynthesizerDelegate
@@ -305,41 +262,4 @@ class MainViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerD
                 .speakerView.backgroundColor = UIColor.white
         }
     }
-    
-    // MARK: UITableViewDelegate
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: "MainToStatus", sender: self)
-        if !RequestHandler.instance.paired {
-            RequestHandler.instance.sendPair()
-        }
-        globalNavGoal = Settings.instance.roomArray[indexPath.row]
-        RequestHandler.instance.sendGoto(room: Settings.instance.roomArray[indexPath.row])
-    }
-    
-    // MARK: UITableViewDataSource
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
-        return 1
-    }
-    
-    func tableView(_ tableView: UITableView,
-                   titleForHeaderInSection section: Int) -> String? {
-        return "Go To Room"
-    }
-    
-    func tableView(_ tableView: UITableView,
-                   numberOfRowsInSection section: Int) -> Int {
-        return Settings.instance.roomArray.count
-    }
-    
-    func tableView(_ tableView: UITableView,
-                   cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let result = UITableViewCell()
-        //result.selectionStyle = .none
-        result.textLabel?.text = Settings.instance.roomArray[indexPath.row]
-        result.accessoryType = .disclosureIndicator
-        return result
-    }
 }
-

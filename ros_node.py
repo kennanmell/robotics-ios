@@ -17,7 +17,7 @@ class VelocityCallback(object):
     def callback(self, msg):
         print 'callback'
         self.motion = msg.linear.x != 0 or msg.linear.y != 0 or msg.linear.z != 0 or msg.angular.x != 0 or msg.angular.y != 0 or msg.angular.z != 0
-        
+
 
 # True only if a navigation request is in progress.
 navPending = False
@@ -97,3 +97,19 @@ def cancel():
     pub.publish(GoalID())
     if navPending:
         needsCancel = True
+
+def find():
+    global navPending
+    global needsCancel
+
+    navPending = True
+
+    navPending = False
+    return 0
+
+def cancelFind():
+    global navPending
+    global needsCancel
+    if navPending:
+        needsCancel = True
+        

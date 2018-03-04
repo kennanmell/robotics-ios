@@ -26,43 +26,85 @@
             </objects>
             <point key="canvasLocation" x="-1510" y="127"/>
         </scene>
-        <!--Request Status-->
-        <scene sceneID="FPi-rM-3qy">
-            <objects>
-                <viewController id="8sq-Sk-8IC" customClass="StatusViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="VAA-CT-v5W" customClass="StatusView" customModule="Robotics" customModuleProvider="target">
-                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
-                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                        <viewLayoutGuide key="safeArea" id="POK-Ir-v3b"/>
-                    </view>
-                    <navigationItem key="navigationItem" title="Request Status" id="o3k-X6-0gS"/>
-                </viewController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="1cm-OV-7wx" userLabel="First Responder" sceneMemberID="firstResponder"/>
-            </objects>
-            <point key="canvasLocation" x="225" y="-576"/>
-        </scene>
-        <!--Robot Control-->
+        <!--Intro-->
         <scene sceneID="tne-QT-ifu">
             <objects>
-                <viewController id="BYZ-38-t0r" customClass="MainViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
-                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="MainView" customModule="Robotics" customModuleProvider="target">
+                <viewController id="BYZ-38-t0r" customClass="IntroViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC" customClass="IntroView" customModule="Robotics" customModuleProvider="target">
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Robot Control" id="63V-1g-kxq">
-                        <barButtonItem key="backBarButtonItem" title="Home" id="oYf-Nq-vkA"/>
+                    <navigationItem key="navigationItem" title="Intro" id="63V-1g-kxq">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="hfr-15-yMq"/>
                     </navigationItem>
                     <connections>
-                        <segue destination="d8Z-7m-5hl" kind="show" identifier="MainToSettings" id="9tM-KU-i7a"/>
-                        <segue destination="8sq-Sk-8IC" kind="show" identifier="MainToStatus" id="I0m-7z-KHv"/>
+                        <segue destination="d8Z-7m-5hl" kind="show" identifier="IntroToSettings" id="9tM-KU-i7a"/>
+                        <segue destination="ri4-Yn-57Y" kind="show" identifier="IntroToSpeak" id="Zrr-XP-jcj"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="-524" y="126"/>
+        </scene>
+        <!--Speak-->
+        <scene sceneID="P5O-iB-A6g">
+            <objects>
+                <viewController id="ri4-Yn-57Y" customClass="SpeakViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="Joe-H0-lci" customClass="PageView" customModule="Robotics" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="dvj-sM-0mL"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Speak" id="8KY-mY-1iT">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="K5y-o3-QPa"/>
+                    </navigationItem>
+                    <connections>
+                        <segue destination="Ktb-Os-sfM" kind="show" identifier="SpeakToFindMe" id="UM9-fD-eIr"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="fhE-3a-PqZ" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="240" y="138"/>
+        </scene>
+        <!--Find Me-->
+        <scene sceneID="vBR-cc-AiV">
+            <objects>
+                <viewController id="Ktb-Os-sfM" customClass="FindMeViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="0Vc-qE-ytD" customClass="PageView" customModule="Robotics" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="cSJ-xf-aFT"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Find Me" id="aXg-6F-c52">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="zCH-IG-OdW"/>
+                    </navigationItem>
+                    <connections>
+                        <segue destination="cFQ-II-Lg3" kind="show" identifier="FindMeToPending" id="dTg-P0-Md2"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="c8B-ia-LE7" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1062" y="148"/>
+        </scene>
+        <!--Pending-->
+        <scene sceneID="v1n-om-Iby">
+            <objects>
+                <viewController id="cFQ-II-Lg3" customClass="FindMePendingViewController" customModule="Robotics" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="czO-yf-ntd" customClass="FindMeView" customModule="Robotics" customModuleProvider="target">
+                        <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <viewLayoutGuide key="safeArea" id="Wbg-Uf-Kgz"/>
+                    </view>
+                    <navigationItem key="navigationItem" title="Pending" id="wyS-rE-7Bp"/>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="iXM-zp-RMI" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="1835" y="-524"/>
         </scene>
         <!--Settings-->
         <scene sceneID="6Vt-iC-VM7">
@@ -74,14 +116,16 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <viewLayoutGuide key="safeArea" id="Ud4-6o-Cxn"/>
                     </view>
-                    <navigationItem key="navigationItem" title="Settings" id="fgA-dV-DLG"/>
+                    <navigationItem key="navigationItem" title="Settings" id="fgA-dV-DLG">
+                        <barButtonItem key="backBarButtonItem" title="Back" id="NkO-fK-K2X"/>
+                    </navigationItem>
                     <connections>
                         <segue destination="vd2-t1-xuE" kind="show" identifier="SettingsToSpeaker" id="yrW-ND-tak"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="29L-Lb-J9K" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="226" y="120"/>
+            <point key="canvasLocation" x="225" y="903"/>
         </scene>
         <!--Speaker-->
         <scene sceneID="i8g-uE-ikQ">
@@ -97,7 +141,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="HEX-UK-qVR" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="993" y="119"/>
+            <point key="canvasLocation" x="1025" y="903"/>
         </scene>
     </scenes>
 </document>

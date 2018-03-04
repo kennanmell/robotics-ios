@@ -94,6 +94,8 @@ class RequestHandler {
         case Commands.cancelGoto: break
         case Commands.speakerPair: break
         case Commands.speakerUnpair: break
+        case Commands.findMe: break
+        case Commands.cancelFindMe: break
         default: fatalError("Tried to send unsupported command to server.")
         }
         

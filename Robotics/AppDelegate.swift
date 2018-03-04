@@ -12,7 +12,7 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    weak static var mvc: MainViewController?
+    weak static var mvc: IntroViewController?
 
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
@@ -33,7 +33,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillEnterForeground(_ application: UIApplication) {
         RequestHandler.instance.connectToServer()
-        AppDelegate.mvc?.willEnterForeground()
+        //AppDelegate.mvc?.willEnterForeground()
     }
 
     func applicationDidBecomeActive(_ application: UIApplication) {
