@@ -6,18 +6,18 @@ import pickle
 import actionlib
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseActionGoal
 from geometry_msgs.msg import Twist
-from actionlib_msgs.msg import GoalID
+from actionlib_msgs.msg import GoalID, GoalStatus, GoalStatusArray
 from std_msgs.msg import Header
 
 class VelocityCallback(object):
     def __init__(self):
         print 'initialized'
         self.motion = True
-        rospy.Subscriber('cmd_vel', Twist, self.callback)
+        rospy.Subscriber('move_base/status', GoalStatusArray, self.callback)
 
     def callback(self, msg):
-        print 'callback'
-        self.motion = msg.linear.x != 0 or msg.linear.y != 0 or msg.linear.z != 0 or msg.angular.x != 0 or msg.angular.y != 0 or msg.angular.z != 0
+        self.motion = len(msg.status_list) > 0 and (msg.status_list[-1].status == 0 or msg.status_list[-1].status == 1)
+        print self.motion
 
 
 # True only if a navigation request is in progress.
@@ -40,7 +40,8 @@ def setup():
 
     pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
     cancelPub = rospy.Publisher('move_base/cancel', GoalID, queue_size = 10)
-    rospy.init_node('amcl', anonymous=True)
+    #rospy.init_node('amcl', anonymous=True)
+    rospy.init_node('ios2')
     callback = VelocityCallback()
 
 # Navigate the robot to room 'name'.
@@ -86,6 +87,7 @@ def goTo(name):
             pub.publish(mbagoal)
             #pub.send_goal(mbgoal)
             # END TODO
+            time.sleep(5)
             while callback.motion:
                 print 'waiting'
                 time.sleep(1)
