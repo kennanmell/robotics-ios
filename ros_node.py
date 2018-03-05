@@ -3,7 +3,8 @@ import time
 import os
 import rospy
 import pickle
-from move_base_msgs.msg import MoveBaseGoal, MoveBaseActionGoal
+import actionlib
+from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseActionGoal
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID
 from std_msgs.msg import Header
@@ -24,9 +25,23 @@ navPending = False
 # True only if the pending navigation request needs to be cancelled.
 needsCancel = False
 
+pub = None
+cancelPub = None
+callback = None
+
 def wait_for_time():
     while rospy.Time().now().to_sec() == 0:
         pass
+
+def setup():
+    global pub
+    global callback
+    global cancelPub
+
+    pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
+    cancelPub = rospy.Publisher('move_base/cancel', GoalID, queue_size = 10)
+    rospy.init_node('amcl', anonymous=True)
+    callback = VelocityCallback()
 
 # Navigate the robot to room 'name'.
 # Set navPending to True when called, then set to False right before returning.
@@ -38,7 +53,7 @@ def goTo(name):
     # TODO: Implement this.
     global navPending
     global needsCancel
-    pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
+    global callback
     navPending = True
     if name == 'lower torso':
         torso = fetch_api.Torso()
@@ -62,17 +77,20 @@ def goTo(name):
             # TODO: Figure out why this goal doesn't cause any motion
             mbagoal = MoveBaseActionGoal()
             mbgoal = MoveBaseGoal()
-            mbgoal.target_pose = stampedCoPose #potential issue here
+            mbgoal.target_pose.header.frame_id = 'map'
+            mbgoal.target_pose.header.stamp = rospy.Time().now()
+            mbgoal.target_pose.pose = stampedCoPose.pose #potential issue here
             mbagoal.goal = mbgoal
             #mbagoal.header =
-            #mbagoal.goal_id =
+            #mbagoal.goal_id.id = 'ios'
             pub.publish(mbagoal)
+            #pub.send_goal(mbgoal)
             # END TODO
-            velCbk = VelocityCallback()
-            while velCbk.motion:
+            while callback.motion:
                 print 'waiting'
                 time.sleep(1)
             navPending = False
+            callback.motion = True
             return 0
     navPending = False
     return 1
@@ -85,16 +103,16 @@ def goTo(name):
 # set needsCancel to False and return 2 as soon as possible.
 def goHome():
     # TODO: Implement this.
-    global navPending
-    global needsCancel
-    return 1
+    return goTo('entrance')
 
 # Requests that navigation be cancelled. Do not modify.
 def cancel():
     global navPending
     global needsCancel
-    pub = rospy.Publisher('move_base/cancel', GoalID, queue_size=10)
-    pub.publish(GoalID())
+    global cancelPub
+    goal = GoalID()
+    #goal.id = 'ios'
+    cancelPub.publish(goal)
     if navPending:
         needsCancel = True
 

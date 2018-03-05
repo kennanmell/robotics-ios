@@ -7,10 +7,11 @@ import imp
 try:
     imp.find_module('rospy')
     import rospy
-    from ros_node import goTo, goHome, cancel, find, cancelFind
-    rospy.init_node('ios_app')
-    while rospy.Time().now().to_sec() == 0:
-        pass
+    from ros_node import goTo, goHome, cancel, find, cancelFind, setup
+    #rospy.init_node('ios_app')
+    #while rospy.Time().now().to_sec() == 0:
+    #    pass
+    setup()
 except ImportError:
     print 'rospy not installed... using dummy navigation'
     from dummy_ros_node import goTo, goHome, cancel, find, cancelFind
