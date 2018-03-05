@@ -85,6 +85,7 @@ if len(sys.argv) != 3:
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(None)
 
 # Bind the socket to the port
 server_address = (sys.argv[1], int(sys.argv[2]))

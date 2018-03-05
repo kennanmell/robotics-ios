@@ -16,8 +16,10 @@ class VelocityCallback(object):
         rospy.Subscriber('move_base/status', GoalStatusArray, self.callback)
 
     def callback(self, msg):
-        self.motion = len(msg.status_list) > 0 and (msg.status_list[-1].status == 0 or msg.status_list[-1].status == 1)
-        print self.motion
+        newMotion = len(msg.status_list) > 0 and (msg.status_list[-1].status == 0 or msg.status_list[-1].status == 1)
+        if self.motion != newMotion:
+            print newMotion
+        self.motion = newMotion
 
 
 # True only if a navigation request is in progress.
@@ -101,7 +103,8 @@ def goTo(name):
 # set needsCancel to False and return 2 as soon as possible.
 def goHome():
     # TODO: Implement this.
-    return goTo('entrance')
+    #return goTo('entrance')
+    return 0
 
 # Requests that navigation be cancelled. Do not modify.
 def cancel():
