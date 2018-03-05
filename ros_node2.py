@@ -38,7 +38,7 @@ def setup():
     global callback
     global cancelPub
 
-    pub = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+    pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
     cancelPub = rospy.Publisher('move_base/cancel', GoalID, queue_size = 10)
     #rospy.init_node('amcl', anonymous=True)
     rospy.init_node('ios2')
@@ -76,12 +76,16 @@ def goTo(name):
             stampedCoPose = pickle.load(loadfile)
             loadfile.close()
             # TODO: Figure out why this goal doesn't cause any motion
+            mbagoal = MoveBaseActionGoal()
             mbgoal = MoveBaseGoal()
             mbgoal.target_pose.header.frame_id = 'map'
             mbgoal.target_pose.header.stamp = rospy.Time().now()
             mbgoal.target_pose.pose = stampedCoPose.pose #potential issue here
+            mbagoal.goal = mbgoal
+            #mbagoal.header =
             #mbagoal.goal_id.id = 'ios'
-            pub.send_goal(mbgoal)
+            pub.publish(mbagoal)
+            #pub.send_goal(mbgoal)
             # END TODO
             rospy.sleep(5)
             while callback.motion:
