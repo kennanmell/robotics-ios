@@ -9,17 +9,20 @@
 import UIKit
 import AVFoundation
 
+var globalNavGoal: String? = nil
+
 class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizerDelegate {
     let maxReadLength = 2
     var synthesizer: AVSpeechSynthesizer? = nil
     var isSpeaking = false
+    let noServerView = NoServerView()
 
-    var introView: IntroView {
-        return self.view as! IntroView
+    var pageView: PageView {
+        return self.view as! PageView
     }
     
     var connectedToServer: Bool {
-        return introView.noServerView.isHidden
+        return self.noServerView.isHidden
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -32,7 +35,7 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        introView.textLabel.text =
+        pageView.textLabel.text =
             "This app controls a robot that helps you get where you need to go!"
         
         let startButton = UIButton()
@@ -40,32 +43,35 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
         startButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
                                    action: #selector(IntroViewController.startTapped)))
-        introView.addButton(button: startButton)
+        pageView.addButton(button: startButton)
         
         let settingsButton = UIButton()
         settingsButton.setTitle("Settings", for: .normal)
         settingsButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
                                    action: #selector(IntroViewController.settingsTapped)))
-        introView.addButton(button: settingsButton)
+        pageView.addButton(button: settingsButton)
         
-        introView.noServerView.settingsButton.addGestureRecognizer(
+        self.noServerView.settingsButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
                                    action: #selector(IntroViewController.settingsTapped)))
         
-        introView.noServerView.retryButton.addGestureRecognizer(
+        self.noServerView.retryButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
                                    action: #selector(IntroViewController.retryTapped)))
+        pageView.addSubview(self.noServerView)
+        self.noServerView.isHidden = true
+        self.noServerView.frame = self.view.frame
     }
     
     func didEnterBackground() {
-        if self.navigationController?.visibleViewController is StatusViewController {
+        if self.navigationController?.visibleViewController is GotoPendingViewController {
             RequestHandler.instance.send(command: Commands.cancelGoto)
-            self.navigationController?.popViewController(animated: true)
         } else if self.navigationController?.visibleViewController is SpeakerViewController {
             RequestHandler.instance.send(command: Commands.speakerUnpair)
-            self.navigationController?.popViewController(animated: true)
         }
+        
+        self.navigationController?.popToRootViewController(animated: false)
     }
     
     // MARK: Callbacks
@@ -105,24 +111,19 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
                     }
                 case Commands.pairFailed:
                     print("pair failed")
-                    globalNavGoal = nil
                     let alert = UIAlertController(title: "Pair failed",
                                                   message: "Someone else is using the robot. Please try again soon!",
                                                   preferredStyle: .alert)
                     
                     alert.addAction(UIAlertAction(title: "OK",
                                                   style: .default,
-                                                  handler: { _ in
-                                                    if self.navigationController?.visibleViewController is StatusViewController {
-                                                        self.navigationController?.popViewController(animated: true)
-                                                    }
-                    }))
+                                                  handler: nil))
                     
                     self.present(alert, animated: true, completion: nil)
                 case Commands.gotoDone:
                     globalNavGoal = nil
                     print("goto done")
-                    if self.navigationController?.visibleViewController is StatusViewController {
+                    if self.navigationController?.visibleViewController is GotoPendingViewController {
                         let alert = UIAlertController(title: "You have arrived.",
                                                       message: nil,
                                                       preferredStyle: .alert)
@@ -130,7 +131,8 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
                         alert.addAction(UIAlertAction(title: "OK",
                                                       style: .default,
                                                       handler: { _ in
-                                                        self.navigationController?.popViewController(animated: true)
+                            self.navigationController?.popViewController(animated: false)
+                            (self.navigationController?.visibleViewController as! GotoViewController).performSegue(withIdentifier: "GotoToArrived", sender: self)
                         }))
                         
                         self.present(alert, animated: true, completion: nil)
@@ -138,7 +140,7 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
                 case Commands.gotoFailed:
                     print ("goto failed")
                     globalNavGoal = nil
-                    if self.navigationController?.visibleViewController is StatusViewController {
+                    if self.navigationController?.visibleViewController is GotoPendingViewController {
                         let alert = UIAlertController(title: "Navigation failed",
                                                       message: "Couldn't find a path to the room.",
                                                       preferredStyle: .alert)
@@ -146,7 +148,7 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
                         alert.addAction(UIAlertAction(title: "OK",
                                                       style: .default,
                                                       handler: { _ in
-                                                        self.navigationController?.popViewController(animated: true)
+                            self.navigationController?.popViewController(animated: true)
                         }))
                         
                         self.present(alert, animated: true, completion: nil)
@@ -173,16 +175,11 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
                     self.present(alert, animated: true, completion: nil)
                 case Commands.cancelGotoSucceeded:
                     print("got cancel succeeded")
-                    if self.navigationController?.visibleViewController is StatusViewController {
-                        self.navigationController?.popViewController(animated: true)
-                    }
                 case Commands.unpair:
                     print("got unpair")
                     RequestHandler.instance.paired = false
-                    while !(self.navigationController?.visibleViewController is IntroViewController) {
-                        self.navigationController?.popViewController(animated: false)
-                    }
-                    
+                    self.navigationController?.popToRootViewController(animated: true)
+
                     let alert = UIAlertController(title: "Unpaired",
                                                   message: "You were unpaired with the robot due to inactivity.",
                                                   preferredStyle: .alert)
@@ -209,21 +206,48 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
                         
                         self.present(alert, animated: true, completion: nil)
                     }
+                    
+                case Commands.findMeSucceeded:
+                    print("find me done")
+                    if self.navigationController?.visibleViewController is FindMePendingViewController {
+                        let alert = UIAlertController(title: "Found you!",
+                                                      message: "The robot is right in front of you.",
+                                                      preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "OK",
+                                                      style: .default,
+                                                      handler: { _ in
+                            self.navigationController?.popViewController(animated: true)
+                        }))
+                        
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                case Commands.findMeFailed:
+                    print ("find me failed")
+                    if self.navigationController?.visibleViewController is FindMePendingViewController {
+                        let alert = UIAlertController(title: "Can't find you",
+                                                      message: "Make sure you're facing the robot and try again.",
+                                                      preferredStyle: .alert)
+                        
+                        alert.addAction(UIAlertAction(title: "OK",
+                                                      style: .default,
+                                                      handler: { _ in
+                            self.navigationController?.popViewController(animated: true)
+                        }))
+                        
+                        self.present(alert, animated: true, completion: nil)
+                    }
                 default:
                     // Includes Commands.kill
                     print(buffer[0])
-                    while !(self.navigationController?.visibleViewController is IntroViewController) {
-                        self.navigationController?.popViewController(animated: false)
-                    }
+                    self.navigationController?.popToRootViewController(animated: false)
                     self.hideNoServerView(false)
                     RequestHandler.instance.paired = false
                 }
             }
         case Stream.Event.errorOccurred:
             print("error occurred")
-            while !(self.navigationController?.visibleViewController is IntroViewController) {
-                self.navigationController?.popViewController(animated: false)
-            }
+            self.navigationController?.popToRootViewController(animated: false)
             self.hideNoServerView(false)
             RequestHandler.instance.paired = false
         case Stream.Event.openCompleted:
@@ -236,9 +260,9 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
     }
     
     func hideNoServerView(_ hide: Bool) {
-        self.introView.noServerView.isHidden = hide
-        self.introView.textLabel.isHidden = !hide
-        for button in self.introView.buttonArray {
+        self.noServerView.isHidden = hide
+        self.pageView.textLabel.isHidden = !hide
+        for button in self.pageView.buttonArray {
             button.isHidden = !hide
         }
     }
@@ -250,7 +274,7 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
         self.isSpeaking = true
         if navigationController?.visibleViewController is SpeakerViewController {
             (navigationController?.visibleViewController as! SpeakerViewController)
-                .speakerView.backgroundColor = UIColor.blue
+                .view.backgroundColor = UIColor.blue
         }
     }
     
@@ -259,7 +283,7 @@ class IntroViewController: UIViewController, StreamDelegate, AVSpeechSynthesizer
         self.isSpeaking = false
         if navigationController?.visibleViewController is SpeakerViewController {
             (navigationController?.visibleViewController as! SpeakerViewController)
-                .speakerView.backgroundColor = UIColor.white
+                .view.backgroundColor = UIColor.white
         }
     }
 }

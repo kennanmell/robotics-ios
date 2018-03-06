@@ -46,10 +46,10 @@ def handleFind(sock):
     result = find()
     if result == 0:
         print 'find succeeded'
-        sock.sendall(findMeSucceeded)
+        sock.sendall(chr(findMeSucceeded))
     else:
         print 'find failed'
-        sock.sendall(findMeFailed)
+        sock.sendall(chr(findMeFailed))
 
 def handleNav(sock, name):
     gotoDone = 8

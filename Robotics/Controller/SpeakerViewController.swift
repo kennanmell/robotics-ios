@@ -9,26 +9,35 @@
 import UIKit
 
 class SpeakerViewController: UIViewController {
-    var speakerView: SpeakerView {
-        return self.view as! SpeakerView
+    var pageView: PageView {
+        return self.view as! PageView
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.hidesBackButton = true
         
-        speakerView.cancelButton.addGestureRecognizer(
-            UITapGestureRecognizer(target: self,
-                                   action: #selector(SpeakerViewController.cancelPressed)))
-
-        speakerView.speechLabel.addGestureRecognizer(
+        pageView.textLabel.text = Settings.instance.speechText
+        pageView.textLabel.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
                                    action: #selector(SpeakerViewController.textPressed)))
+        pageView.textLabel.isUserInteractionEnabled = true
+        
+        let cancelButton = UIButton()
+        cancelButton.setTitle("Cancel", for: .normal)
+        cancelButton.addGestureRecognizer(
+            UITapGestureRecognizer(target: self,
+                                   action: #selector(SpeakerViewController.cancelTapped)))
+        pageView.addButton(button: cancelButton)
+        cancelButton.backgroundColor =
+            UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
+        cancelButton.layer.shadowColor =
+            UIColor(red: 100.0 / 255.0, green: 0, blue: 0, alpha: 1.0).cgColor
     }
     
-    @objc func cancelPressed() {
-        self.navigationController?.popViewController(animated: true)
+    @objc func cancelTapped() {
         RequestHandler.instance.send(command: Commands.speakerUnpair)
+        self.navigationController?.popViewController(animated: true)
     }
     
     @objc func textPressed() {
@@ -45,7 +54,7 @@ class SpeakerViewController: UIViewController {
                                       handler: { [weak alert] (_) in
             let newVal = alert?.textFields![0].text
             Settings.instance.speechText = newVal!
-            self.speakerView.speechLabel.text = newVal
+                                        self.pageView.textLabel.text = newVal
         }))
         
         self.present(alert, animated: true, completion: nil)

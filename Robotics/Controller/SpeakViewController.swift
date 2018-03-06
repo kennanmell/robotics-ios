@@ -36,6 +36,14 @@ class SpeakViewController: UIViewController {
         pageView.addButton(button: nextButton)
     }
     
+    override func viewWillDisappear(_ animated : Bool) {
+        super.viewWillDisappear(animated)
+        
+        if self.isMovingFromParentViewController {
+            RequestHandler.instance.send(command: Commands.unpair)
+        }
+    }
+    
     @objc func speakTapped() {
         RequestHandler.instance.send(command: Commands.speak)
     }

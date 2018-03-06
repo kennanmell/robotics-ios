@@ -47,7 +47,7 @@ def find():
 
     navPending = True
 
-    for x in range(0, 5):
+    for x in range(0, 60):
         if needsCancel:
             needsCancel = False
             navPending = False
