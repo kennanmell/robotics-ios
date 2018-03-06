@@ -144,6 +144,7 @@ def socketEventLoop(connection):
             print 'got data', ord(data[0])
             #instanceId = (ord(data[0]) << 8) | ord(data[1])
             if ord(data[0]) == pair:
+                print 'got pair', connection
                 while len(data) < 6:
                     data += connection.recv(6 - len(data))
 
@@ -259,15 +260,16 @@ def socketEventLoop(connection):
                     pairedSpeaker = None
                     attempts = 0
             elif ord(data[0]) == pressurePair:
-                if pairedPressure != None:
-                    print 'unpairing with pressure', pairedPressure
+                print 'a'
+                #if not pairedPressure:
+                #    print 'unpairing with pressure', pairedPressure
 
                 print 'set pressure to', str(connection)
                 pairedPressure = connection
-                connection.sendll(chr(pressurePairSucceeded))
+                connection.sendall(chr(pressurePairSucceeded))
             elif ord(data[0]) == pressureDataNone or ord(data[0]) == pressureDataHigh or ord(data[0]) == pressureDataHolding:
                 print 'got pressure data', connection
-                if pairedPressure == connection and rosSocket is not None:
+                if pairedPressure == connection and rosSocket:
                     rosSocket.sendall(data[0])
                 else:
                     print 'could not forward pressure data'
