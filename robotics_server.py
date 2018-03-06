@@ -99,13 +99,14 @@ def socketEventLoop(connection):
     findMe = 25
     findMeSucceeded = 26
     findMeFailed = 27
+    cancelFindMe = 28
 
-    pressurePair = 28
-    pressurePairSucceeded = 29
-    pressurePairFailed = 30
-    pressureDataNone = 31
-    pressureDataHolding = 32
-    pressureDataHigh = 33
+    pressurePair = 29
+    pressurePairSucceeded = 30
+    pressurePairFailed = 31
+    pressureDataNone = 32
+    pressureDataHolding = 33
+    pressureDataHigh = 34
 
     attempts = 0
 
@@ -252,7 +253,7 @@ def socketEventLoop(connection):
                 connection.sendll(chr(pressurePairSucceeded))
             elif ord(data[0]) == pressureDataNone or ord(data[0]) == pressureDataHigh or ord(data[0]) == pressureDataHolding:
                 print 'got pressure data', connection
-                if pairedPressure == connection and !(rosSocket is None):
+                if pairedPressure == connection and rosSocket is not None:
                     rosSocket.sendall(data[0])
                 else:
                     print 'could not forward pressure data'

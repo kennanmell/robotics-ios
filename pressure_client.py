@@ -1,11 +1,14 @@
+import socket
+import sys
+
 kill = 11
 ping = 19
-pressurePair = 28
-pressurePairSucceeded = 29
-pressurePairFailed = 30
-pressureDataNone = 31
-pressureDataHolding = 32
-pressureDataHigh = 33
+pressurePair = 29
+pressurePairSucceeded = 30
+pressurePairFailed = 31
+pressureDataNone = 32
+pressureDataHolding = 33
+pressureDataHigh = 34
 
 if len(sys.argv) != 3:
     print "Usage: python", sys.argv[0], "<server-ip> <server-portno>"
