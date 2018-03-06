@@ -9,11 +9,13 @@ rosSocket = None
 pairedSpeaker = None
 pairedPressure = None
 navPending = False
+didMove = False
 
 def findMeResponse(connection):
     global pairedInstance
     global rosSocket
     global navPending
+    global didMove
 
     findMeSucceeded = 26
     findMeFailed = 27
@@ -26,6 +28,8 @@ def findMeResponse(connection):
         connection.sendall(chr(findMeFailed))
     else:
         print 'find finished'
+	if ord(data[0]) == findMeSucceeded:
+	    didMove = True
         try:
             connection.sendall(data)
         except:
@@ -36,6 +40,7 @@ def robotResponse(connection):
     global pairedInstance
     global rosSocket
     global navPending
+    global didMove
 
     gotoDone = 8
     gotoFailed = 9
@@ -49,6 +54,7 @@ def robotResponse(connection):
         else:
             print 'go home failed'
         pairedInstance = None
+        didMove = False
         return
 
     if ord(data[0]) != gotoDone and ord(data[0]) != gotoFailed and ord(data[0]) != cancelGotoSucceeded:
@@ -58,6 +64,7 @@ def robotResponse(connection):
         connection.sendall(chr(gotoFailed))
     else:
         print 'goto finished'
+        didMove = True
         try:
             connection.sendall(data)
         except:
@@ -70,6 +77,7 @@ def socketEventLoop(connection):
     global rosSocket
     global pairedSpeaker
     global navPending
+    global didMove
 
     pair = 1
     pairSucceeded = 2
@@ -120,13 +128,17 @@ def socketEventLoop(connection):
                 attempts += 1
                 if attempts >= 14:
                     print 'force unpairing with', str(connection)
-                    print 'sending robot home'
                     connection.sendall(chr(unpair))
-                    pairedInstance = 12
-                    rosSocket.sendall(chr(goHome))
-                    thread = Thread(target = robotResponse, args = (connection,))
-                    thread.start()
-                    attempts = 0
+		    if didMove:
+                        print 'sending robot home'
+                        pairedInstance = 12
+                        rosSocket.sendall(chr(goHome))
+                        thread = Thread(target = robotResponse, args = (connection,))
+                        thread.start()
+                        attempts = 0
+                    else:
+                        pairedInstance = None
+                        attempts = 0
 
             data = connection.recv(1)
             #instanceId = (ord(data[0]) << 8) | ord(data[1])
@@ -149,7 +161,7 @@ def socketEventLoop(connection):
             elif ord(data[0]) == unpair:
                 print 'unpaired with', str(connection)
                 if pairedInstance == connection:
-                    if rosSocket is None:
+                    if rosSocket is None or didMove is False:
                         pairedInstance = None
                     else:
                         print 'sending robot home'
@@ -195,6 +207,7 @@ def socketEventLoop(connection):
                 print 'got find me from', str(connection)
                 navPending = True
                 attempts = 0
+                rosSocket.sendall(data)
                 thread = Thread(target = findMeResponse, args = (connection, ))
                 thread.start()
             elif ord(data[0]) == cancelFindMe:
