@@ -141,6 +141,7 @@ def socketEventLoop(connection):
                         attempts = 0
 
             data = connection.recv(1)
+            print 'got data', ord(data[0])
             #instanceId = (ord(data[0]) << 8) | ord(data[1])
             if ord(data[0]) == pair:
                 while len(data) < 6:

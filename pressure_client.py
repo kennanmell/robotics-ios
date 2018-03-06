@@ -37,3 +37,6 @@ if ord(data[0]) != pressurePairSucceeded:
 print 'paired with server'
 
 # TODO: read pressure and use sock.sendall(chr(pressureData[None, Holding, High])) to send changes
+
+# Clean up
+sock.sendall(chr(kill))
