@@ -7,6 +7,7 @@ pairedInstance = None
 shutdown = False
 rosSocket = None
 pairedSpeaker = None
+pairedPressure = None
 navPending = False
 didMove = False
 
@@ -107,6 +108,13 @@ def socketEventLoop(connection):
     findMeSucceeded = 26
     findMeFailed = 27
     cancelFindMe = 28
+
+    pressurePair = 28
+    pressurePairSucceeded = 29
+    pressurePairFailed = 30
+    pressureDataNone = 31
+    pressureDataHolding = 32
+    pressureDataHigh = 33
 
     attempts = 0
 
@@ -249,6 +257,19 @@ def socketEventLoop(connection):
                 if pairedSpeaker == connection:
                     pairedSpeaker = None
                     attempts = 0
+            elif ord(data[0]) == pressurePair:
+                if pairedPressure != None:
+                    print 'unpairing with pressure', pairedPressure
+
+                print 'set pressure to', str(connection)
+                pairedPressure = connection
+                connection.sendll(chr(pressurePairSucceeded))
+            elif ord(data[0]) == pressureDataNone or ord(data[0]) == pressureDataHigh or ord(data[0]) == pressureDataHolding:
+                print 'got pressure data', connection
+                if pairedPressure == connection and !(rosSocket is None):
+                    rosSocket.sendall(data[0])
+                else:
+                    print 'could not forward pressure data'
             elif ord(data[0]) == cancelGoto:
                 print 'got cancel request'
                 if pairedInstance != connection:

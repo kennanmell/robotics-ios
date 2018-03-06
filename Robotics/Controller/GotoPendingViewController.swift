@@ -1,30 +1,30 @@
 //
-//  FindMePendingViewController.swift
+//  GotoPendingViewController
 //  Robotics
 //
-//  Created by Kennan Mell on 3/4/18.
+//  Created by Kennan Mell on 3/3/18.
 //  Copyright © 2018 Kennan Mell. All rights reserved.
 //
 
 import UIKit
 
-class FindMePendingViewController: UIViewController {
-    var findMeView: FindMeView {
-        return self.view as! FindMeView
+class GotoPendingViewController: UIViewController {
+    var pageView: PageView {
+        return self.view as! PageView
     }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.hidesBackButton = true
         
-        findMeView.textLabel.text = "Looking for you..."
+        pageView.textLabel.text = "Navigating to room..."
         
         let cancelButton = UIButton()
         cancelButton.setTitle("Cancel", for: .normal)
         cancelButton.addGestureRecognizer(
             UITapGestureRecognizer(target: self,
-                                   action: #selector(FindMePendingViewController.cancelTapped)))
-        findMeView.addButton(button: cancelButton)
+                                   action: #selector(GotoPendingViewController.cancelTapped)))
+        pageView.addButton(button: cancelButton)
         cancelButton.backgroundColor =
             UIColor(red: 200.0 / 255.0, green: 0, blue: 0, alpha: 1.0)
         cancelButton.layer.shadowColor =
@@ -32,7 +32,8 @@ class FindMePendingViewController: UIViewController {
     }
     
     @objc func cancelTapped() {
-        RequestHandler.instance.send(command: Commands.cancelFindMe)
+        RequestHandler.instance.send(command: Commands.cancelGoto)
         self.navigationController?.popViewController(animated: true)
     }
 }
+

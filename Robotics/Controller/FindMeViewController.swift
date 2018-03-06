@@ -41,6 +41,6 @@ class FindMeViewController: UIViewController {
     }
     
     @objc func nextTapped() {
-        
+        performSegue(withIdentifier: "FindToGoto", sender: self)
     }
 }

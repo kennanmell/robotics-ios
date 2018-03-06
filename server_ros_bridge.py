@@ -7,10 +7,11 @@ import imp
 try:
     imp.find_module('rospy')
     import rospy
-    from ros_node import goTo, goHome, cancel, find, cancelFind
-    rospy.init_node('ios_app')
-    while rospy.Time().now().to_sec() == 0:
-        pass
+    from ros_node import goTo, goHome, cancel, find, cancelFind, setup
+    #rospy.init_node('ios_app')
+    #while rospy.Time().now().to_sec() == 0:
+    #    pass
+    setup()
 except ImportError:
     print 'rospy not installed... using dummy navigation'
     from dummy_ros_node import goTo, goHome, cancel, find, cancelFind
@@ -46,10 +47,10 @@ def handleFind(sock):
     result = find()
     if result == 0:
         print 'find succeeded'
-        sock.sendall(findMeSucceeded)
+        sock.sendall(chr(findMeSucceeded))
     else:
         print 'find failed'
-        sock.sendall(findMeFailed)
+        sock.sendall(chr(findMeFailed))
 
 def handleNav(sock, name):
     gotoDone = 8
@@ -84,6 +85,7 @@ if len(sys.argv) != 3:
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(None)
 
 # Bind the socket to the port
 server_address = (sys.argv[1], int(sys.argv[2]))
