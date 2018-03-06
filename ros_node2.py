@@ -16,10 +16,8 @@ class VelocityCallback(object):
         rospy.Subscriber('move_base/status', GoalStatusArray, self.callback)
 
     def callback(self, msg):
-        newMotion = len(msg.status_list) > 0 and (msg.status_list[-1].status == 0 or msg.status_list[-1].status == 1)
-        if self.motion != newMotion:
-            print newMotion
-        self.motion = newMotion
+        self.motion = len(msg.status_list) > 0 and (msg.status_list[-1].status == 0 or msg.status_list[-1].status == 1)
+        print self.motion
 
 
 # True only if a navigation request is in progress.
@@ -40,7 +38,7 @@ def setup():
     global callback
     global cancelPub
 
-    pub = actionlib.SimpleActionClient('move_base', MoveBaseAction)
+    pub = rospy.Publisher('move_base/goal', MoveBaseActionGoal, queue_size=10)
     cancelPub = rospy.Publisher('move_base/cancel', GoalID, queue_size = 10)
     #rospy.init_node('amcl', anonymous=True)
     rospy.init_node('ios2')
@@ -78,12 +76,16 @@ def goTo(name):
             stampedCoPose = pickle.load(loadfile)
             loadfile.close()
             # TODO: Figure out why this goal doesn't cause any motion
+            mbagoal = MoveBaseActionGoal()
             mbgoal = MoveBaseGoal()
             mbgoal.target_pose.header.frame_id = 'map'
             mbgoal.target_pose.header.stamp = rospy.Time().now()
             mbgoal.target_pose.pose = stampedCoPose.pose #potential issue here
+            mbagoal.goal = mbgoal
+            #mbagoal.header =
             #mbagoal.goal_id.id = 'ios'
-            pub.send_goal(mbgoal)
+            pub.publish(mbagoal)
+            #pub.send_goal(mbgoal)
             # END TODO
             rospy.sleep(5)
             while callback.motion:
@@ -103,8 +105,7 @@ def goTo(name):
 # set needsCancel to False and return 2 as soon as possible.
 def goHome():
     # TODO: Implement this.
-    #return goTo('entrance')
-    return 0
+    return goTo('entrance')
 
 # Requests that navigation be cancelled. Do not modify.
 def cancel():
