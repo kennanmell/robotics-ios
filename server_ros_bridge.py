@@ -47,10 +47,10 @@ def handleFind(sock):
     result = find()
     if result == 0:
         print 'find succeeded'
-        sock.sendall(findMeSucceeded)
+        sock.sendall(chr(findMeSucceeded))
     else:
         print 'find failed'
-        sock.sendall(findMeFailed)
+        sock.sendall(chr(findMeFailed))
 
 def handleNav(sock, name):
     gotoDone = 8
@@ -85,6 +85,7 @@ if len(sys.argv) != 3:
 
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.settimeout(None)
 
 # Bind the socket to the port
 server_address = (sys.argv[1], int(sys.argv[2]))

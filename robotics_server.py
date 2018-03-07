@@ -7,12 +7,15 @@ pairedInstance = None
 shutdown = False
 rosSocket = None
 pairedSpeaker = None
+pairedPressure = None
 navPending = False
+didMove = False
 
 def findMeResponse(connection):
     global pairedInstance
     global rosSocket
     global navPending
+    global didMove
 
     findMeSucceeded = 26
     findMeFailed = 27
@@ -25,6 +28,8 @@ def findMeResponse(connection):
         connection.sendall(chr(findMeFailed))
     else:
         print 'find finished'
+	if ord(data[0]) == findMeSucceeded:
+	    didMove = True
         try:
             connection.sendall(data)
         except:
@@ -35,6 +40,7 @@ def robotResponse(connection):
     global pairedInstance
     global rosSocket
     global navPending
+    global didMove
 
     gotoDone = 8
     gotoFailed = 9
@@ -48,6 +54,7 @@ def robotResponse(connection):
         else:
             print 'go home failed'
         pairedInstance = None
+        didMove = False
         return
 
     if ord(data[0]) != gotoDone and ord(data[0]) != gotoFailed and ord(data[0]) != cancelGotoSucceeded:
@@ -57,6 +64,7 @@ def robotResponse(connection):
         connection.sendall(chr(gotoFailed))
     else:
         print 'goto finished'
+        didMove = True
         try:
             connection.sendall(data)
         except:
@@ -69,6 +77,7 @@ def socketEventLoop(connection):
     global rosSocket
     global pairedSpeaker
     global navPending
+    global didMove
 
     pair = 1
     pairSucceeded = 2
@@ -98,6 +107,14 @@ def socketEventLoop(connection):
     findMe = 25
     findMeSucceeded = 26
     findMeFailed = 27
+    cancelFindMe = 28
+
+    pressurePair = 29
+    pressurePairSucceeded = 30
+    pressurePairFailed = 31
+    pressureDataNone = 32
+    pressureDataHolding = 33
+    pressureDataHigh = 34
 
     attempts = 0
 
@@ -111,17 +128,23 @@ def socketEventLoop(connection):
                 attempts += 1
                 if attempts >= 14:
                     print 'force unpairing with', str(connection)
-                    print 'sending robot home'
                     connection.sendall(chr(unpair))
-                    pairedInstance = 12
-                    rosSocket.sendall(chr(goHome))
-                    thread = Thread(target = robotResponse, args = (connection,))
-                    thread.start()
-                    attempts = 0
+		    if didMove:
+                        print 'sending robot home'
+                        pairedInstance = 12
+                        rosSocket.sendall(chr(goHome))
+                        thread = Thread(target = robotResponse, args = (connection,))
+                        thread.start()
+                        attempts = 0
+                    else:
+                        pairedInstance = None
+                        attempts = 0
 
             data = connection.recv(1)
+            print 'got data', ord(data[0])
             #instanceId = (ord(data[0]) << 8) | ord(data[1])
             if ord(data[0]) == pair:
+                print 'got pair', connection
                 while len(data) < 6:
                     data += connection.recv(6 - len(data))
 
@@ -140,7 +163,7 @@ def socketEventLoop(connection):
             elif ord(data[0]) == unpair:
                 print 'unpaired with', str(connection)
                 if pairedInstance == connection:
-                    if rosSocket is None:
+                    if rosSocket is None or didMove is False:
                         pairedInstance = None
                     else:
                         print 'sending robot home'
@@ -186,6 +209,7 @@ def socketEventLoop(connection):
                 print 'got find me from', str(connection)
                 navPending = True
                 attempts = 0
+                rosSocket.sendall(data)
                 thread = Thread(target = findMeResponse, args = (connection, ))
                 thread.start()
             elif ord(data[0]) == cancelFindMe:
@@ -235,6 +259,20 @@ def socketEventLoop(connection):
                 if pairedSpeaker == connection:
                     pairedSpeaker = None
                     attempts = 0
+            elif ord(data[0]) == pressurePair:
+                print 'a'
+                #if not pairedPressure:
+                #    print 'unpairing with pressure', pairedPressure
+
+                print 'set pressure to', str(connection)
+                pairedPressure = connection
+                connection.sendall(chr(pressurePairSucceeded))
+            elif ord(data[0]) == pressureDataNone or ord(data[0]) == pressureDataHigh or ord(data[0]) == pressureDataHolding:
+                print 'got pressure data', connection
+                if pairedPressure == connection and rosSocket:
+                    rosSocket.sendall(data[0])
+                else:
+                    print 'could not forward pressure data'
             elif ord(data[0]) == cancelGoto:
                 print 'got cancel request'
                 if pairedInstance != connection:

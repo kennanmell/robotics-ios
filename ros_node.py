@@ -40,7 +40,6 @@ class VelocityCallback(object):
         print self.motion
         print msg.status_list[-1].status
 
-
 # True only if a navigation request is in progress.
 navPending = False
 # True only if the pending navigation request needs to be cancelled.
@@ -127,7 +126,8 @@ def goTo(name):
 # set needsCancel to False and return 2 as soon as possible.
 def goHome():
     # TODO: Implement this.
-    return goTo('entrance')
+    #return goTo('entrance')
+    return 0
 
 # Requests that navigation be cancelled. Do not modify.
 def cancel():
