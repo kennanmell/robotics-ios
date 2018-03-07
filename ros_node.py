@@ -7,7 +7,27 @@ import actionlib
 from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseActionGoal
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID, GoalStatus, GoalStatusArray
-from std_msgs.msg import Header
+from std_msgs.msg import Header, String
+
+class PressureCallback(object):
+    def __init__(self):
+        self.goal = None
+        self.moving = False
+        rospy.Subscriber('pressure', String, self.callback)
+
+    def callback(self, msg):
+        global pub
+        global cancelPub
+        if msg.data == 'cancel':
+            print 'got cancel'
+            self.moving = False
+            cancel()
+        else:
+            # msg == 'start'
+            print 'got start'
+            if not self.moving and self.goal is not None:
+                self.moving = True
+                sendNavGoal(self.goal)
 
 class VelocityCallback(object):
     def __init__(self):
@@ -16,8 +36,9 @@ class VelocityCallback(object):
         rospy.Subscriber('move_base/status', GoalStatusArray, self.callback)
 
     def callback(self, msg):
-        self.motion = len(msg.status_list) > 0 and (msg.status_list[-1].status == 0 or msg.status_list[-1].status == 1)
+        self.motion = len(msg.status_list) > 0 and (msg.status_list[-1].status != 3 and msg.status_list[-1].status != 4 and msg.status_list[-1].status != 5)
         print self.motion
+        print msg.status_list[-1].status
 
 
 # True only if a navigation request is in progress.
@@ -28,6 +49,7 @@ needsCancel = False
 pub = None
 cancelPub = None
 callback = None
+pressureCallback = None
 
 def wait_for_time():
     while rospy.Time().now().to_sec() == 0:
@@ -37,21 +59,16 @@ def setup():
     global pub
     global callback
     global cancelPub
+    global pressureCallback
 
     pub = actionlib.SimpleActionClient('move_base', MoveBaseAction)
     cancelPub = rospy.Publisher('move_base/cancel', GoalID, queue_size = 10)
     #rospy.init_node('amcl', anonymous=True)
     rospy.init_node('ios2')
     callback = VelocityCallback()
+    pressureCallback = PressureCallback()
 
-# Navigate the robot to room 'name'.
-# Set navPending to True when called, then set to False right before returning.
-# Return 0 if navigation completed successfully.
-# Return 1 if navigation failed.
-# If needsCancel is True (value may change during execution),
-# set needsCancel to False and return 2 as soon as possible.
-def goTo(name):
-    # TODO: Implement this.
+def sendNavGoal(name):
     global navPending
     global needsCancel
     global callback
@@ -83,15 +100,24 @@ def goTo(name):
             #mbagoal.goal_id.id = 'ios'
             pub.send_goal(mbgoal)
             # END TODO
-            rospy.sleep(5)
-            while callback.motion:
-                print 'waiting'
-                rospy.sleep(1)
-            navPending = False
-            callback.motion = True
-            return 0
+ 
+
+# Navigate the robot to room 'name'.
+# Set navPending to True when called, then set to False right before returning.
+# Return 0 if navigation completed successfully.
+# Return 1 if navigation failed.
+# If needsCancel is True (value may change during execution),
+# set needsCancel to False and return 2 as soon as possible.
+def goTo(name):
+    global pressureCallback
+    pressureCallback.goal = name
+    rospy.sleep(2)
+    while callback.motion:
+        print 'waiting'
+        rospy.sleep(1)
     navPending = False
-    return 1
+    pressureCallback.goal = None
+    return 0
 
 # Navigate the robot to its default location.
 # Set navPending to True when called, then set to False right before returning.
