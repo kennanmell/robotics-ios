@@ -8,6 +8,7 @@ from move_base_msgs.msg import MoveBaseGoal, MoveBaseAction, MoveBaseActionGoal
 from geometry_msgs.msg import Twist
 from actionlib_msgs.msg import GoalID, GoalStatus, GoalStatusArray
 from std_msgs.msg import Header, String
+from initiate_contact import runner
 
 class PressureCallback(object):
     def __init__(self):
@@ -172,6 +173,7 @@ def find():
 
     navPending = True
 
+    runner()
     navPending = False
     return 0
 
