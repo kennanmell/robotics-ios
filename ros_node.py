@@ -22,11 +22,12 @@ class PressureCallback(object):
         if msg.data == 'cancel':
             print 'got cancel'
             self.moving = False
-            cancel()
+            internalCancel()
         else:
             # msg == 'start'
             print 'got start'
             if not self.moving and self.goal is not None:
+                print 'starting'
                 self.moving = True
                 sendNavGoal(self.goal)
 
@@ -34,12 +35,18 @@ class VelocityCallback(object):
     def __init__(self):
         print 'initialized'
         self.motion = True
+        self.cancelled = False
         rospy.Subscriber('move_base/status', GoalStatusArray, self.callback)
 
     def callback(self, msg):
-        self.motion = len(msg.status_list) > 0 and (msg.status_list[-1].status != 3 and msg.status_list[-1].status != 4 and msg.status_list[-1].status != 5)
+        global navPending
+        print "navPending", navPending
+        if navPending:
+            if not self.cancelled and len(msg.status_list) > 0 and (msg.status_list[-1].status != 3 and msg.status_list[-1].status != 4 and msg.status_list[-1].status != 5):
+                navPending = False
+
+        self.motion = navPending or (not self.cancelled and len(msg.status_list) > 0 and (msg.status_list[-1].status != 3 and msg.status_list[-1].status != 4 and msg.status_list[-1].status != 5))
         print self.motion
-        print msg.status_list[-1].status
 
 # True only if a navigation request is in progress.
 navPending = False
@@ -110,13 +117,20 @@ def sendNavGoal(name):
 # set needsCancel to False and return 2 as soon as possible.
 def goTo(name):
     global pressureCallback
+    global callback
+    global navPending
+    print 'got goto'
     pressureCallback.goal = name
+    navPending = True
     rospy.sleep(2)
     while callback.motion:
         print 'waiting'
         rospy.sleep(1)
     navPending = False
     pressureCallback.goal = None
+    pressureCallback.moving = False
+    callback.cancelled = False
+    callback.motion = True
     return 0
 
 # Navigate the robot to its default location.
@@ -130,11 +144,23 @@ def goHome():
     #return goTo('entrance')
     return 0
 
+def internalCancel():
+    global navPending
+    global needsCancel
+    global cancelPub
+    global callback
+    goal = GoalID()
+    cancelPub.publish(goal)
+    if navPending:
+        needsCancel = True
+
 # Requests that navigation be cancelled. Do not modify.
 def cancel():
     global navPending
     global needsCancel
     global cancelPub
+    global callback
+    callback.cancelled = True
     goal = GoalID()
     #goal.id = 'ios'
     cancelPub.publish(goal)
