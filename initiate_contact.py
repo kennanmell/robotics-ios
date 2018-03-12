@@ -55,7 +55,7 @@ def draw_debug_marker(pose, rgba=[0.0,0.5,0.5,0.5]):
 class ActionRunner(object):
     def __init__(self):
         print("create ActionRunner")
-        rospy.init_node('action_runner')
+        # rospy.init_node('action_runner')
         wait_for_time()
 
         # get gripper
@@ -69,6 +69,7 @@ class ActionRunner(object):
         self.markers = {}
         # get initial position of markers... it will continue updating in background
         reachable = False
+        rospy.sleep(0.5)
         while len(self.reader.markers) == 0:
             # TODO[LOW PRIORITY]: implement looking for the AR tag by tilting its head up and down
             print("waiting for marker")
@@ -86,7 +87,11 @@ class ActionRunner(object):
         draw_debug_marker(debug_marker_pose, [0,1,0,0.5])
         original_pose_stamped = dot_poses(lookup_transform("/odom","/base_link"), markers[0].pose.pose)
         print("Adjusting orientation")
+        number_of_turns = 0
         while not reachable:
+            if number_of_turns > 5:
+                print("Turned enough, I guess...")
+                break
             while len(self.reader.markers) == 0:
                 pass
             # m = markers[0]
@@ -98,6 +103,7 @@ class ActionRunner(object):
             print("\tComputed turn:" + str(turn))
             if abs(turn) > 0.07:
                 self.base.turn(turn)
+                number_of_turns += 1
                 rospy.sleep(1.5)
                 print("\tExecuted turn")
             # markers = self.reader.markers
@@ -126,20 +132,28 @@ class ActionRunner(object):
         #target_pose = PoseStamped(pose=original_pose_stamped.pose)
         #target_pose = PoseStamped(pose=markers[0].pose.pose)
         original_pose_stamped.pose.position.x -= 0.25
-        original_pose_stamped.pose.position.y -= 0.10
+        original_pose_stamped.pose.position.y -= 0.05
+        original_pose_stamped.pose.orientation.x = 0
+        original_pose_stamped.pose.orientation.y = 0.7
+        original_pose_stamped.pose.orientation.z = 0
+        original_pose_stamped.pose.orientation.w = -0.7
         target_pose = dot_poses(lookup_transform("/base_link", "/odom"), original_pose_stamped.pose)
         target_pose.header.frame_id = "/base_link"
         target_pose.header.stamp = rospy.Time.now()
         print("Marker pose after moving is " + str(target_pose))
         if self.arm.compute_ik(target_pose):
+            self.success = True
             print("reachable")
-            # TODO[MID]: Find a way to move the gripper slower
+            # FINISHED: the gripper moves significantly slower by changing MoveGroup's
+            #   MotionPlanRequest's max_velocity_scaling factor.
             print("move_to_pose result: " + str(self.arm.move_to_pose(target_pose)))
         else:
             print("not reachable :(")
+            self.success = False
         draw_debug_marker(target_pose, [0,0,1,0.5])
 
         # TODO[HARD]: get pre-recorded motion and apply that motion to start navigating the user
+        # rospy.spin()
 
 
     class ArTagReader(object):
@@ -159,6 +173,7 @@ Creates an action client to use this action.
 """
 def runner():
     ar = ActionRunner()
+    return ar.success
 
 def main():
   #  start the arm controller
