@@ -11,6 +11,8 @@ from std_msgs.msg import Header, String
 from initiate_contact import runner
 from common_pose import move_to_start_nav_pose, move_to_init_pose
 
+sound = fetch_api.RobotSound()
+
 class PressureCallback(object):
     def __init__(self):
         self.goal = None
@@ -171,12 +173,14 @@ def cancel():
 def find():
     global navPending
     global needsCancel
+    global sound
 
     navPending = True
     if not runner():
         print("unsuccessful")
         return 1
     move_to_start_nav_pose()
+    sound.say('I am in front of you. Reach out your hand and find me.')
     navPending = False
     return 0
 
