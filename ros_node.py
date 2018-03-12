@@ -144,8 +144,7 @@ def goTo(name):
 # set needsCancel to False and return 2 as soon as possible.
 def goHome():
     # TODO: Implement this.
-    #return goTo('entrance')
-    return 0
+    return goTo('324')
 
 def internalCancel():
     global navPending
