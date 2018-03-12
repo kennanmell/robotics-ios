@@ -41,13 +41,11 @@ class VelocityCallback(object):
 
     def callback(self, msg):
         global navPending
-        print "navPending", navPending
         if navPending:
             if not self.cancelled and len(msg.status_list) > 0 and (msg.status_list[-1].status != 3 and msg.status_list[-1].status != 4 and msg.status_list[-1].status != 5):
                 navPending = False
 
         self.motion = navPending or (not self.cancelled and len(msg.status_list) > 0 and (msg.status_list[-1].status != 3 and msg.status_list[-1].status != 4 and msg.status_list[-1].status != 5))
-        print self.motion
 
 # True only if a navigation request is in progress.
 navPending = False
@@ -93,6 +91,7 @@ def sendNavGoal(name):
         return 0
     else:
         if not os.path.exists('pickle/' + name):
+            print os.path.abspath(os.getcwd())
             print 'No such pose \'' + name + '\''
             navPending = False
             return 1

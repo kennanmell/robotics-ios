@@ -141,6 +141,7 @@ class ActionRunner(object):
         target_pose.header.frame_id = "/base_link"
         target_pose.header.stamp = rospy.Time.now()
         print("Marker pose after moving is " + str(target_pose))
+        draw_debug_marker(target_pose, [0,0,1,0.5])
         if self.arm.compute_ik(target_pose):
             self.success = True
             print("reachable")
@@ -150,7 +151,6 @@ class ActionRunner(object):
         else:
             print("not reachable :(")
             self.success = False
-        draw_debug_marker(target_pose, [0,0,1,0.5])
 
         # TODO[HARD]: get pre-recorded motion and apply that motion to start navigating the user
         # rospy.spin()
