@@ -11,7 +11,6 @@ from std_msgs.msg import Header, String
 from initiate_contact import runner
 from common_pose import move_to_start_nav_pose, move_to_init_pose
 
-sound = fetch_api.RobotSound()
 
 class PressureCallback(object):
     def __init__(self):
@@ -60,6 +59,7 @@ pub = None
 cancelPub = None
 callback = None
 pressureCallback = None
+sound = None
 
 def wait_for_time():
     while rospy.Time().now().to_sec() == 0:
@@ -70,6 +70,7 @@ def setup():
     global callback
     global cancelPub
     global pressureCallback
+    global sound
 
     pub = actionlib.SimpleActionClient('move_base', MoveBaseAction)
     cancelPub = rospy.Publisher('move_base/cancel', GoalID, queue_size = 10)
@@ -77,6 +78,7 @@ def setup():
     rospy.init_node('ios2')
     callback = VelocityCallback()
     pressureCallback = PressureCallback()
+    sound = fetch_api.RobotSound()
 
 def sendNavGoal(name):
     global navPending
@@ -178,8 +180,9 @@ def find():
     if not runner():
         print("unsuccessful")
         return 1
-    move_to_start_nav_pose()
     sound.say('I am in front of you. Reach out your hand and find me.')
+    rospy.sleep(2)
+    move_to_start_nav_pose()
     navPending = False
     return 0
 
