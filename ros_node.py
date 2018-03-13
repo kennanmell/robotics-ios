@@ -94,13 +94,18 @@ def sendNavGoal(name):
         navPending = False
         return 0
     else:
-        if not os.path.exists('pickle/' + name):
-            print os.path.abspath(os.getcwd())
+        # get the current script path
+        # (since the pickle subdirectory is part of the repo)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        pickle_file_path = script_dir + 'pickle/' + name
+
+        if not os.path.exists(pickle_file_path):
+            print 'Failed to find file' + str(os.path.abspath(pickle_file_path))
             print 'No such pose \'' + name + '\''
             navPending = False
             return 1
         else:
-            loadfile = open('pickle/' + name, 'rb')
+            loadfile = open(pickle_file_path, 'rb')
             stampedCoPose = pickle.load(loadfile)
             loadfile.close()
             # TODO: Figure out why this goal doesn't cause any motion
